@@ -53,11 +53,11 @@ export function AuthModal({ open, onOpenChange, defaultTab = 'login' }: AuthModa
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-lg border border-slate-700 bg-slate-900 p-6 shadow-xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-lg border border-slate-700 bg-slate-900 p-6 shadow-xl max-h-[90vh] overflow-y-auto data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
           <Dialog.Close asChild>
             <button
               type="button"
-              className="absolute right-3 top-3 rounded p-1 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+              className="absolute right-2 top-2 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md text-slate-400 hover:bg-slate-800 hover:text-white transition-colors touch-manipulation"
               aria-label="Close"
             >
               <X className="h-5 w-5" />
@@ -68,7 +68,7 @@ export function AuthModal({ open, onOpenChange, defaultTab = 'login' }: AuthModa
             <button
               type="button"
               onClick={() => { setTab('login'); setMessage(null); }}
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
+              className={`flex-1 min-h-[44px] py-2 text-sm font-medium rounded-md transition-colors touch-manipulation ${
                 tab === 'login' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-white hover:bg-slate-800'
               }`}
             >
@@ -77,7 +77,7 @@ export function AuthModal({ open, onOpenChange, defaultTab = 'login' }: AuthModa
             <button
               type="button"
               onClick={() => { setTab('signup'); setMessage(null); }}
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
+              className={`flex-1 min-h-[44px] py-2 text-sm font-medium rounded-md transition-colors touch-manipulation ${
                 tab === 'signup' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-white hover:bg-slate-800'
               }`}
             >
@@ -113,7 +113,7 @@ export function AuthModal({ open, onOpenChange, defaultTab = 'login' }: AuthModa
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-md bg-amber-500 py-2 text-sm font-medium text-slate-950 hover:bg-amber-400 disabled:opacity-50 transition-colors"
+              className="w-full min-h-[44px] rounded-md bg-amber-500 py-2 text-sm font-medium text-slate-950 hover:bg-amber-400 disabled:opacity-50 transition-colors touch-manipulation"
             >
               {loading ? '...' : (tab === 'login' ? t('signIn') : t('signUp'))}
             </button>

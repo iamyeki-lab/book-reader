@@ -14,7 +14,7 @@ export default async function LocaleLayout({
   if (!routing.locales.includes(locale as 'en' | 'es' | 'ar')) {
     notFound();
   }
-  const messages = await getMessages();
+  const messages = (await getMessages()) ?? {};
   const isRtl = locale === 'ar';
 
   return (

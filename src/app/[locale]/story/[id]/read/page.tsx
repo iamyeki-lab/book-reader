@@ -175,6 +175,12 @@ export default function ReaderPage() {
     );
   };
 
+  const scrollToTop = useCallback(() => {
+    window.scrollTo(0, 0);
+    const el = document.getElementById('reader-content');
+    if (el) el.scrollTop = 0;
+  }, []);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background p-8 flex items-center justify-center">
@@ -207,6 +213,7 @@ export default function ReaderPage() {
       setScrollTop(0);
       setChapterIndex(chapterIndex - 1);
       saveProgress(chapterIndex - 1, 0);
+      scrollToTop();
     }
   };
 
@@ -215,6 +222,7 @@ export default function ReaderPage() {
       setScrollTop(0);
       setChapterIndex(chapterIndex + 1);
       saveProgress(chapterIndex + 1, 0);
+      scrollToTop();
     }
   };
 
@@ -223,6 +231,7 @@ export default function ReaderPage() {
     setChapterIndex(idx);
     saveProgress(idx, 0);
     setShowToc(false);
+    scrollToTop();
   };
 
   const onScroll = () => {

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
@@ -13,10 +13,16 @@ import type { Locale } from '@/lib/supabase/types';
 
 export default function ExplorePage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const locale = (params?.locale as Locale) || 'en';
   const t = useTranslations('explore');
   const [searchInput, setSearchInput] = useState('');
   const searchQuery = useMemo(() => searchInput.trim() || undefined, [searchInput]);
+
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (q) setSearchInput(q);
+  }, [searchParams]);
   const { books, loading, error } = useBooks(locale, searchQuery);
 
   return (

@@ -17,13 +17,13 @@ export default async function AdminTranslationPage() {
     <div className="max-w-4xl">
       <h1 className="mb-6 text-2xl font-bold">翻译管理</h1>
       <p className="mb-6 text-muted-foreground">
-        翻译工作通过 novel-translator 工具完成。此处可查看书籍与翻译进度，术语表在书籍编辑页或术语表管理中维护。
+        翻译工作通过本地运行的 <code>novel-translator</code> 工具完成，并写入数据库。Web 端仅从数据库读取展示，避免占用服务器资源。
       </p>
       <div className="space-y-4">
         <div className="rounded-lg border border-border bg-card p-4">
-          <h2 className="mb-2 font-semibold">翻译端链接</h2>
+          <h2 className="mb-2 font-semibold">本地翻译端链接</h2>
           <p className="text-sm text-muted-foreground mb-2">
-            启动 novel-translator GUI 后访问（默认端口 5001）：
+            启动本地翻译助手（默认端口 5001）：
           </p>
           <a
             href="http://localhost:5001"

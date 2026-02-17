@@ -56,7 +56,7 @@ export default function AuthPage() {
               type="button"
               onClick={() => { setTab('login'); setMessage(null); }}
               className={cn(
-                'flex-1 py-2 text-sm font-medium rounded-md transition-colors',
+                'flex-1 min-h-[44px] py-2 text-sm font-medium rounded-md transition-colors touch-manipulation',
                 tab === 'login'
                   ? 'bg-amber-500 text-slate-950'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
@@ -68,7 +68,7 @@ export default function AuthPage() {
               type="button"
               onClick={() => { setTab('signup'); setMessage(null); }}
               className={cn(
-                'flex-1 py-2 text-sm font-medium rounded-md transition-colors',
+                'flex-1 min-h-[44px] py-2 text-sm font-medium rounded-md transition-colors touch-manipulation',
                 tab === 'signup'
                   ? 'bg-amber-500 text-slate-950'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
@@ -104,7 +104,7 @@ export default function AuthPage() {
             {message.text}
           </p>
         )}
-        <Button type="submit" disabled={loading} className="w-full bg-amber-500 text-slate-950 hover:bg-amber-400">
+        <Button type="submit" disabled={loading} className="w-full min-h-[44px] bg-amber-500 text-slate-950 hover:bg-amber-400 touch-manipulation">
           {loading ? '...' : (tab === 'login' ? t('signIn') : t('signUp'))}
         </Button>
         </form>

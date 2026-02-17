@@ -14,7 +14,16 @@ export function SyncToFrontendButton({ bookId }: { bookId?: string }) {
     setMessage(null);
     try {
       await syncToFrontendAction(bookId);
-      setMessage('已同步到网页端，读者将看到最新内容');
+      const time = new Date().toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      });
+      setMessage(`已同步到网页端，同步时间：${time}`);
     } catch (e) {
       setMessage(String(e));
     } finally {

@@ -7,15 +7,15 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { Globe } from 'lucide-react';
 
 const LOCALES = [
-  { code: 'ar', label: 'العربية' },
-  { code: 'es', label: 'Español' },
   { code: 'en', label: 'English' },
+  { code: 'es', label: 'Español' },
+  { code: 'ar', label: 'العربية' },
 ] as const;
 
 export function LocaleSwitcher() {
   const pathname = usePathname();
   const params = useParams();
-  const currentLocale = (params?.locale as string) || 'ar';
+  const currentLocale = (params?.locale as string) || 'en';
   const currentLabel = LOCALES.find((l) => l.code === currentLocale)?.label ?? 'English';
 
   const getLocalizedPath = (locale: string) => {
@@ -33,7 +33,7 @@ export function LocaleSwitcher() {
       <DropdownMenu.Trigger asChild>
         <button
           type="button"
-          className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+          className="inline-flex min-h-[44px] touch-manipulation items-center justify-center gap-2 rounded-md px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
           aria-label="Select language"
         >
           <Globe className="h-4 w-4" />
@@ -50,7 +50,7 @@ export function LocaleSwitcher() {
             <DropdownMenu.Item key={loc.code} asChild>
               <Link
                 href={getLocalizedPath(loc.code)}
-                className={`block px-4 py-2 text-sm outline-none hover:bg-slate-800 focus:bg-slate-800 ${
+                className={`flex min-h-[44px] touch-manipulation items-center px-4 py-2 text-sm outline-none hover:bg-slate-800 focus:bg-slate-800 ${
                   currentLocale === loc.code ? 'text-amber-400 font-medium' : 'text-slate-200'
                 }`}
                 lang={loc.code}

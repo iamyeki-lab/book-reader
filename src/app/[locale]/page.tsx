@@ -50,6 +50,9 @@ export default async function LandingPage({
         startReading: tExplore('startReading'),
         readNow: t('readNow', { defaultValue: 'Read Now' }),
         addToLibrary: t('addToLibrary', { defaultValue: 'Add to Library' }),
+        searchPlaceholder: tExplore('searchPlaceholder'),
+        expand: t('expand', { defaultValue: 'Expand' }),
+        collapse: t('collapse', { defaultValue: 'Collapse' }),
       }}
     />
   );

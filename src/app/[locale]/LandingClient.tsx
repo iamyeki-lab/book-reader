@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import { AuthModal } from '@/components/AuthModal';
 import { CoverImage } from '@/components/CoverImage';
-import { BookOpen, Layers, Search } from 'lucide-react';
+import { BookOpen, Layers, Search, X } from 'lucide-react';
 
 interface BookItem {
   id: string;
@@ -34,12 +35,27 @@ interface LandingClientProps {
     startReading: string;
     readNow: string;
     addToLibrary: string;
+    searchPlaceholder: string;
+    expand: string;
+    collapse: string;
   };
 }
 
 export function LandingClient({ locale, user, profileLabel, slogan, trendingSubtitle, featured, books, t }: LandingClientProps) {
   const [authOpen, setAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState<'login' | 'signup'>('login');
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchInput, setSearchInput] = useState('');
+  const [descExpanded, setDescExpanded] = useState(false);
+  const router = useRouter();
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = searchInput.trim();
+    setShowSearch(false);
+    setSearchInput('');
+    router.push(q ? `/${locale}/explore?q=${encodeURIComponent(q)}` : `/${locale}/explore`);
+  };
 
   return (
     <div className="min-h-screen bg-slate-950">
@@ -49,18 +65,43 @@ export function LandingClient({ locale, user, profileLabel, slogan, trendingSubt
           STORYREALM
         </Link>
         <div className="flex items-center gap-2 md:gap-4">
-          <button
-            type="button"
-            className="rounded-md p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
-            aria-label="搜索"
-          >
-            <Search className="h-4 w-4" />
-          </button>
+          {showSearch ? (
+            <form onSubmit={handleSearchSubmit} className="flex flex-1 max-w-[200px] sm:max-w-[240px]">
+              <input
+                type="search"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder={t.searchPlaceholder}
+                autoFocus
+                className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-1.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+              />
+              <button type="submit" className="ml-1 flex min-h-[36px] min-w-[36px] items-center justify-center rounded-md bg-amber-500 p-1.5 text-slate-950 hover:bg-amber-400">
+                <Search className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowSearch(false); setSearchInput(''); }}
+                className="ml-1 flex min-h-[36px] min-w-[36px] items-center justify-center rounded-md p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white"
+                aria-label="关闭搜索"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </form>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowSearch(true)}
+              className="flex min-h-[44px] min-w-[44px] touch-manipulation items-center justify-center rounded-md p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+              aria-label="搜索"
+            >
+              <Search className="h-4 w-4" />
+            </button>
+          )}
           <LocaleSwitcher />
           {user ? (
             <Link
               href={`/${locale}/profile`}
-              className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium bg-amber-500 text-slate-950 hover:bg-amber-400 transition-colors"
+              className="inline-flex min-h-[44px] touch-manipulation items-center justify-center rounded-md px-4 py-2 text-sm font-medium bg-amber-500 text-slate-950 hover:bg-amber-400 transition-colors"
             >
               {profileLabel}
             </Link>
@@ -69,14 +110,14 @@ export function LandingClient({ locale, user, profileLabel, slogan, trendingSubt
               <button
                 type="button"
                 onClick={() => { setAuthTab('login'); setAuthOpen(true); }}
-                className="hidden sm:inline-flex text-sm text-slate-300 hover:text-white transition-colors py-2"
+                className="hidden sm:inline-flex min-h-[44px] touch-manipulation items-center text-sm text-slate-300 hover:text-white transition-colors py-2"
               >
                 {t.login}
               </button>
               <button
                 type="button"
                 onClick={() => { setAuthTab('signup'); setAuthOpen(true); }}
-                className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium bg-amber-500 text-slate-950 hover:bg-amber-400 transition-colors"
+                className="inline-flex min-h-[44px] touch-manipulation items-center justify-center rounded-md px-4 py-2 text-sm font-medium bg-amber-500 text-slate-950 hover:bg-amber-400 transition-colors"
               >
                 {t.signUp}
               </button>
@@ -135,9 +176,20 @@ export function LandingClient({ locale, user, profileLabel, slogan, trendingSubt
                 </h1>
                 <p className="text-slate-400 text-sm mb-4">{featured.author}</p>
                 {featured.description && (
-                  <p className="text-slate-300 text-sm md:text-base max-w-xl mb-6 line-clamp-4">
-                    {featured.description}
-                  </p>
+                  <div className="max-w-xl mb-6">
+                    <p className={`text-slate-300 text-sm md:text-base ${!descExpanded ? 'line-clamp-4' : ''}`}>
+                      {featured.description}
+                    </p>
+                    {featured.description.length > 120 && (
+                      <button
+                        type="button"
+                        onClick={() => setDescExpanded(!descExpanded)}
+                        className="mt-1 text-xs text-amber-400 hover:text-amber-300 transition-colors"
+                      >
+                        {descExpanded ? t.collapse : t.expand}
+                      </button>
+                    )}
+                  </div>
                 )}
                 <div className="flex flex-wrap justify-center md:justify-start gap-3">
                   <Link

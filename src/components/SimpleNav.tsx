@@ -16,12 +16,12 @@ export function SimpleNav({ locale, title = 'StoryRealm' }: SimpleNavProps) {
       <Link href={`/${locale}`} className="font-display text-lg font-bold text-amber-500 hover:text-amber-400 transition-colors">
         {title}
       </Link>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-1 sm:gap-4">
         <LocaleSwitcher />
-        <Link href={`/${locale}/bookshelf`} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+        <Link href={`/${locale}/bookshelf`} className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md px-2 text-sm text-muted-foreground hover:text-foreground transition-colors touch-manipulation sm:min-w-0 sm:justify-start">
           {t('bookshelf', { defaultValue: 'Bookshelf' })}
         </Link>
-        <Link href={`/${locale}/explore`} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+        <Link href={`/${locale}/explore`} className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md px-2 text-sm text-muted-foreground hover:text-foreground transition-colors touch-manipulation sm:min-w-0 sm:justify-start">
           {t('title')}
         </Link>
       </div>
