@@ -187,7 +187,7 @@ export function ChapterEditor({
       setContent(dialog.dbChapter.content);
       setMessage({ type: 'ok', text: '已从数据库刷新原文' });
     } else if (dialog.type === 'translation' && dialog.targetLang && dialog.dbTrans) {
-      setTrans(dialog.targetLang, dialog.dbTrans);
+      setTrans(dialog.targetLang as 'en' | 'es' | 'ar', dialog.dbTrans);
       setMessage({ type: 'ok', text: `已从数据库刷新${dialog.targetLang.toUpperCase()}` });
     }
     setDialog(null);
@@ -201,8 +201,9 @@ export function ChapterEditor({
         await updateChapterDataAction(chapterId, bookId, editorChapter());
         setMessage({ type: 'ok', text: '原文已覆盖并同步到数据库' });
       } else if (dialog.type === 'translation' && dialog.targetLang) {
-        await updateTranslationDataAction(chapterId, bookId, dialog.targetLang, getTrans(dialog.targetLang));
-        setMessage({ type: 'ok', text: `${dialog.targetLang.toUpperCase()}已覆盖并同步到数据库` });
+        const lang = dialog.targetLang as 'en' | 'es' | 'ar';
+        await updateTranslationDataAction(chapterId, bookId, lang, getTrans(lang));
+        setMessage({ type: 'ok', text: `${lang.toUpperCase()}已覆盖并同步到数据库` });
       }
       setDialog(null);
     } catch (e) {

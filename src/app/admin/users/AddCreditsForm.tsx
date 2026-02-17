@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { addCreditsToUserAction } from '@/app/admin/actions';
 
-export function AddCreditsForm({ userId, currentCredits }: { userId: string; currentCredits: number }) {
+export function AddCreditsForm({ userId }: { userId: string; currentCredits?: number }) {
   const [credits, setCredits] = useState(10);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);

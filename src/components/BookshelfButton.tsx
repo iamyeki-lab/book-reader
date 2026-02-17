@@ -6,13 +6,12 @@ import { Button } from '@/components/ui/button';
 
 interface BookshelfButtonProps {
   bookId: string;
-  locale: string;
   addLabel: string;
   removeLabel: string;
   className?: string;
 }
 
-export function BookshelfButton({ bookId, locale, addLabel, removeLabel, className }: BookshelfButtonProps) {
+export function BookshelfButton({ bookId, addLabel, removeLabel, className }: BookshelfButtonProps) {
   const [inBookshelf, setInBookshelf] = useState(false);
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);

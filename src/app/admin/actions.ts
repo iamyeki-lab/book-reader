@@ -136,6 +136,7 @@ export async function mergeBookAction(targetBookId: string, formData: FormData) 
   const sourceBookId = (formData.get('sourceBookId') as string)?.trim();
   if (!sourceBookId) throw new Error('请输入源书籍 ID');
   const client = createAdminClient();
+  // @ts-expect-error - merge_book_translations RPC args not in generated Database types
   const { data, error } = await client.rpc('merge_book_translations', {
     source_book_id: sourceBookId,
     target_book_id: targetBookId,
@@ -345,9 +346,10 @@ export async function addCreditsToUserAction(userId: string, credits: number) {
   await ensureAdmin();
   const client = createAdminClient();
   const { data: existing } = await client.from('reader_profiles').select('credits').eq('user_id', userId).single();
-  const current = (existing?.credits as number) ?? 0;
+  const current = ((existing as { credits?: number } | null)?.credits) ?? 0;
   const { error } = await client
     .from('reader_profiles')
+    // @ts-expect-error - Supabase reader_profiles Insert type inference
     .upsert(
       { user_id: userId, credits: Math.max(0, current + credits) },
       { onConflict: 'user_id' }
@@ -375,6 +377,7 @@ export async function replyFeedbackAction(id: string, adminReply: string) {
   if (!reply) return { error: '请输入回复内容' };
   const { error } = await client
     .from('feedback_messages')
+    // @ts-expect-error - feedback_messages Update type
     .update({ admin_reply: reply, replied_at: new Date().toISOString() })
     .eq('id', id);
   if (error) return { error: error.message };

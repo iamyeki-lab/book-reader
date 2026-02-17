@@ -390,7 +390,7 @@ export default function ReaderPage() {
                 bookId={id}
                 chapterId={currentChapter.id}
                 onUnlock={() => {
-                  setPurchasedIds((prev) => new Set([...prev, currentChapter.id]));
+                  setPurchasedIds((prev) => new Set([...Array.from(prev), currentChapter.id]));
                 }}
                 t={(k) => t(k as 'purchaseChapter', { defaultValue: k })}
               />

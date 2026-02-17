@@ -53,7 +53,7 @@ export function parseChapters(rawContent: string): Chapter[] {
   const text = rawContent.trim();
   if (!text) return [];
 
-  const matches = [...text.matchAll(ZH_CHAPTER_RE)];
+  const matches = Array.from(text.matchAll(ZH_CHAPTER_RE));
   if (matches.length < 2) {
     return [{
       number: 1,

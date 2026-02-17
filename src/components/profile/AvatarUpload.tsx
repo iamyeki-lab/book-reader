@@ -3,7 +3,7 @@
 import { useCallback, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Loader2, Upload, ImageIcon } from 'lucide-react';
+import { Loader2, ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];

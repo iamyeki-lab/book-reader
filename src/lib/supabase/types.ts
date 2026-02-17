@@ -50,6 +50,21 @@ export interface Database {
         Insert: { user_id: string; book_id: string; chapter_index?: number; scroll_top?: number };
         Update: Partial<{ chapter_index: number; scroll_top: number }>;
       };
+      feedback_messages: {
+        Row: { id: string; user_id: string | null; email: string; content: string; admin_reply: string | null; replied_at: string | null; created_at: string };
+        Insert: { id?: string; user_id?: string | null; email: string; content: string; admin_reply?: string | null; replied_at?: string | null; created_at?: string };
+        Update: Partial<{ admin_reply: string; replied_at: string }>;
+      };
+    };
+    Functions: {
+      merge_book_translations: {
+        Args: { source_book_id: string; target_book_id: string };
+        Returns: unknown;
+      };
+      purchase_chapter: {
+        Args: { p_user_id: string; p_chapter_id: string; p_book_id: string; p_credits_price: number };
+        Returns: Json;
+      };
     };
   };
 }

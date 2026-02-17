@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation';
 import { getCurrentAdminEmail } from '@/lib/supabase/auth-admin';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { addCreditsToUserAction } from '@/app/admin/actions';
 import { AddCreditsForm } from './AddCreditsForm';
 
 export const dynamic = 'force-dynamic';
@@ -17,7 +16,9 @@ export default async function AdminUsersPage() {
     admin.from('admin_users').select('email'),
   ]);
   const users = usersRes.data?.users ?? [];
-  const creditsMap = new Map((profilesRes.data ?? []).map((p) => [p.user_id, p.credits as number]));
+  const creditsMap = new Map(
+    (profilesRes.data ?? []).map((p: { user_id: string; credits: number }) => [p.user_id, p.credits])
+  );
   const adminEmails = new Set((adminEmailsRes.data ?? []).map((a) => (a as { email: string }).email));
 
   const readerUsers = users.filter((u) => !adminEmails.has(u.email ?? ''));

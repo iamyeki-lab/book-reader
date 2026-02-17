@@ -72,7 +72,6 @@ export default function StoryDetailPage() {
           )}
           <BookshelfButton
             bookId={id}
-            locale={locale}
             addLabel={t('addToBookshelf', { defaultValue: 'Add to Bookshelf' })}
             removeLabel={t('removeFromBookshelf', { defaultValue: 'Remove from Bookshelf' })}
           />

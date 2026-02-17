@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import { AuthModal } from '@/components/AuthModal';
@@ -88,10 +89,13 @@ export function LandingClient({ locale, user, profileLabel, slogan, trendingSubt
       {/* Hero - 精选书籍：左侧封面，右侧标题/简介/按钮 */}
       <section className="relative min-h-[60vh] flex flex-col md:flex-row items-center justify-center px-4 py-12 md:py-16">
         <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950">
-          <img
+          <Image
             src="/img/beijing.jpeg"
             alt=""
-            className="absolute inset-0 w-full h-full object-cover"
+            fill
+            className="object-cover"
+            priority
+            sizes="100vw"
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-950/70 to-slate-950" />
