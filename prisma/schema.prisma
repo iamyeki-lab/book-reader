@@ -1,0 +1,99 @@
+// Prisma schema for User Profiles, Library, and Reading History
+// Compatible with Supabase PostgreSQL
+// Note: UserProfile.id corresponds to auth.users(id) - no FK due to separate schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Existing models (mapped from Supabase) ----------
+model Book {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String
+  author      String
+  lang        String   @default("en")
+  description String?
+  cover_url   String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  chapters       Chapter[]
+  libraryEntries Library[]
+  readingHistory ReadingHistory[]
+
+  @@map("books")
+}
+
+model Chapter {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  bookId         String   @map("book_id")
+  chapter_number Int      @map("chapter_number")
+  title          String
+  content        String
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at")
+
+  book                         Book             @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  readingHistoryAsLastChapter  ReadingHistory[]
+
+  @@unique([bookId, chapter_number])
+  @@index([bookId])
+  @@map("chapters")
+}
+
+// ---------- User Profile (links to Supabase Auth via id) ----------
+model UserProfile {
+  id               String   @id @db.Uuid // Same as auth.users(id)
+  nickname         String?  @default("")
+  avatarUrl        String?  @map("avatar_url")
+  bio              String?  @default("")
+  cultivationRank  String   @default("Mortal") @map("cultivation_rank")
+  experiencePoints Int      @default(0) @map("experience_points")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @default(now()) @updatedAt @map("updated_at")
+
+  libraryEntries  Library[]
+  readingHistory  ReadingHistory[]
+
+  @@map("user_profiles")
+}
+
+// ---------- Library (Bookmarks) - User <-> Book Many-to-Many ----------
+model Library {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id")
+  bookId    String   @map("book_id")
+  addedAt   DateTime @default(now()) @map("added_at")
+
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book         @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId])
+  @@index([userId])
+  @@index([bookId])
+  @@map("library")
+}
+
+// ---------- Reading History - User + Book (unique per user per book) ----------
+model ReadingHistory {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId             String   @map("user_id")
+  bookId             String   @map("book_id")
+  lastChapterId      String?  @map("last_chapter_id")
+  progressPercentage Float    @default(0) @map("progress_percentage")
+  lastReadAt         DateTime @default(now()) @updatedAt @map("last_read_at")
+
+  user        UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book        Book        @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  lastChapter Chapter?    @relation(fields: [lastChapterId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, bookId])
+  @@index([userId])
+  @@index([bookId])
+  @@map("reading_history")
+}
