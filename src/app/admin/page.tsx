@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { getCurrentAdminEmail } from '@/lib/supabase/auth-admin';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { SyncFromDatabaseButton } from './SyncFromDatabaseButton';
 import { SyncToFrontendButton } from './SyncToFrontendButton';
 import {
   Users,
@@ -182,10 +183,13 @@ export default async function AdminDashboardPage() {
     <div className="max-w-5xl space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-bold">管理后台</h1>
-        <SyncToFrontendButton />
+        <div className="flex flex-wrap items-center gap-3">
+          <SyncFromDatabaseButton />
+          <SyncToFrontendButton />
+        </div>
       </div>
       <p className="text-muted-foreground">
-        管理书籍、章节与站点设置。修改内容后点击「同步到网页端」刷新读者可见内容。
+        双向同步：点击「从数据库同步」刷新后台显示（数据库被 novel-translator 等更新后）；点击「同步到网页端」刷新读者可见内容。
       </p>
 
       <section>

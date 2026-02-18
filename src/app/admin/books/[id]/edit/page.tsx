@@ -4,6 +4,7 @@ import { getCurrentAdminEmail } from '@/lib/supabase/auth-admin';
 import { createClient } from '@/lib/supabase/server';
 import { getBookById } from '@/lib/supabase/queries';
 import { updateBookAction, mergeBookAction, publishBookAction } from '../../../actions';
+import { SyncFromDatabaseButton } from '@/app/admin/SyncFromDatabaseButton';
 import { SyncToFrontendButton } from '@/app/admin/SyncToFrontendButton';
 import { DeleteBookButton } from '../../DeleteBookButton';
 import { CoverUploadForm } from '../CoverUploadForm';
@@ -32,7 +33,10 @@ export default async function EditBookPage({
     <div className="max-w-2xl">
       <div className="mb-6 flex items-center justify-between gap-4">
         <h1 className="text-2xl font-bold">编辑书籍</h1>
-        <SyncToFrontendButton bookId={id} />
+        <div className="flex items-center gap-3">
+          <SyncFromDatabaseButton bookId={id} />
+          <SyncToFrontendButton bookId={id} />
+        </div>
       </div>
       {(merged != null || saved || published || unpublished) && (
         <div

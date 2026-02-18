@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getCurrentAdminEmail } from '@/lib/supabase/auth-admin';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -233,11 +233,27 @@ function revalidateFrontend(bookId?: string) {
       revalidatePath(`/${locale}/story/${bookId}/read`, 'page');
     }
   }
+  revalidateTag('translations');
 }
 
+/** 数据库 → 网页端：刷新读者端缓存，使读者看到数据库最新内容 */
 export async function syncToFrontendAction(bookId?: string) {
   await ensureAdmin();
   revalidateFrontend(bookId);
+  return { ok: true };
+}
+
+/** 从数据库同步：刷新后台缓存，使后台页面显示数据库最新内容（如被 novel-translator 等更新后） */
+export async function syncFromDatabaseAction(bookId?: string) {
+  await ensureAdmin();
+  revalidatePath('/admin', 'layout');
+  revalidatePath('/admin/books');
+  if (bookId) {
+    revalidatePath(`/admin/books/${bookId}`);
+    revalidatePath(`/admin/books/${bookId}/chapters`);
+    revalidatePath(`/admin/books/${bookId}/edit`);
+    revalidatePath(`/admin/glossary/${bookId}`);
+  }
   return { ok: true };
 }
 
