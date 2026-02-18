@@ -31,10 +31,22 @@ function startOfYear(d: Date): string {
 }
 
 export default async function AdminDashboardPage() {
-  const email = await getCurrentAdminEmail();
+  let email: string | null = null;
+  try {
+    email = await getCurrentAdminEmail();
+  } catch {
+    redirect('/admin/login');
+  }
   if (!email) redirect('/admin/login');
 
-  const admin = createAdminClient();
+  let admin: ReturnType<typeof createAdminClient>;
+  try {
+    admin = createAdminClient();
+  } catch (e) {
+    console.error('Admin createAdminClient:', e);
+    redirect('/admin/login');
+  }
+
   const now = new Date();
   const dayStart = startOfDay(new Date(now.getTime()));
   const monthStart = startOfMonth(new Date(now.getTime()));
