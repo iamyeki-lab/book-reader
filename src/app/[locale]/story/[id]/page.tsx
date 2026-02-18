@@ -1,82 +1,87 @@
-'use client';
-
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
-import { useTranslations } from 'next-intl';
-import { useBookDetail } from '@/hooks/useRemoteBooks';
-import { CoverImage } from '@/components/CoverImage';
-import { Button } from '@/components/ui/button';
-import { SimpleNav } from '@/components/SimpleNav';
-import { BookshelfButton } from '@/components/BookshelfButton';
+import type { Metadata } from 'next';
+import { getCachedBookMetadata } from '@/lib/supabase/queries';
 import type { Locale } from '@/lib/supabase/types';
+import { StoryDetailClient } from './StoryDetailClient';
 
-export default function StoryDetailPage() {
-  const params = useParams();
-  const id = params?.id as string;
-  const locale = (params?.locale as Locale) || 'en';
-  const t = useTranslations('story');
-  const { detail, loading, error } = useBookDetail(id, locale);
+const SITE_NAME = 'StoryRealm';
+const OG_LOCALE: Record<string, string> = {
+  en: 'en_US',
+  es: 'es_ES',
+  ar: 'ar_SA',
+  zh: 'zh_CN',
+};
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto max-w-3xl px-4 py-16 text-center text-muted-foreground">
-          {t('loading', { defaultValue: 'Loading…' })}
-        </div>
-      </div>
-    );
+function toAbsoluteUrl(pathOrUrl: string): string {
+  if (pathOrUrl.startsWith('http://') || pathOrUrl.startsWith('https://')) return pathOrUrl;
+  const base = process.env.NEXT_PUBLIC_APP_URL || 'https://storyrealm.app';
+  return base.replace(/\/$/, '') + (pathOrUrl.startsWith('/') ? pathOrUrl : '/' + pathOrUrl);
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string; locale: string }>;
+}): Promise<Metadata> {
+  const { id, locale } = await params;
+  const lang = (locale || 'en') as Locale;
+  let meta: Metadata;
+  try {
+    const data = await getCachedBookMetadata(id, lang);
+    if (!data) {
+      meta = {
+        title: `Read on ${SITE_NAME}`,
+        description: 'Web novels in your language.',
+        openGraph: { title: SITE_NAME, siteName: SITE_NAME },
+        twitter: { card: 'summary_large_image', title: SITE_NAME },
+      };
+    } else {
+      const { title, description, coverUrl } = data;
+      const summary = description.slice(0, 160);
+      const canonicalUrl = toAbsoluteUrl(`/${locale}/story/${id}`);
+      const imageUrl = coverUrl ? toAbsoluteUrl(coverUrl) : undefined;
+      meta = {
+        title: `${title} - Read on ${SITE_NAME}`,
+        description: summary,
+        openGraph: {
+          title,
+          description: summary,
+          url: canonicalUrl,
+          siteName: SITE_NAME,
+          locale: OG_LOCALE[lang] || lang,
+          ...(imageUrl && {
+            images: [
+              {
+                url: imageUrl,
+                width: 1200,
+                height: 630,
+                alt: title,
+              },
+            ],
+          }),
+        },
+        twitter: {
+          card: 'summary_large_image',
+          title,
+          description: summary,
+          ...(imageUrl && { images: [imageUrl] }),
+        },
+      };
+    }
+  } catch {
+    meta = {
+      title: `Read on ${SITE_NAME}`,
+      description: 'Web novels in your language.',
+      openGraph: { title: SITE_NAME, siteName: SITE_NAME },
+      twitter: { card: 'summary_large_image', title: SITE_NAME },
+    };
   }
-  if (error || !detail) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto max-w-3xl px-4 py-16 text-center text-destructive">
-          {t('errorLoadingBook', { defaultValue: 'Error loading book' })}
-        </div>
-      </div>
-    );
-  }
+  return meta;
+}
 
-  const { book, chapters } = detail;
-  const hasTranslation = detail.translations.length > 0;
-
-  return (
-    <div className="min-h-screen bg-background">
-      <SimpleNav locale={locale} />
-      <div className="container mx-auto max-w-3xl px-4 sm:px-6 py-6 sm:py-8">
-        <div className="mb-6 flex justify-center">
-          <CoverImage
-            src={book.cover_url}
-            placeholderText={book.title.slice(0, 2)}
-            className="h-48 w-32 sm:h-64 sm:w-40 shrink-0"
-            aspectRatio="2/3"
-          />
-        </div>
-        <h1 className="text-2xl font-bold text-foreground mb-2">{book.title}</h1>
-        <p className="text-muted-foreground mb-6">{t('by')} {book.author}</p>
-        {book.description && (
-          <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-2">{t('description')}</h2>
-            <p className="text-muted-foreground whitespace-pre-wrap">{book.description}</p>
-          </section>
-        )}
-        {!hasTranslation && (
-          <p className="mb-6 text-muted-foreground">{t('noTranslation')}</p>
-        )}
-        <div className="flex flex-wrap gap-2">
-          {hasTranslation && (
-            <Button asChild>
-              <Link href={`/${locale}/story/${id}/read`}>
-                {t('chapters')} ({chapters.length})
-              </Link>
-            </Button>
-          )}
-          <BookshelfButton
-            bookId={id}
-            addLabel={t('addToBookshelf', { defaultValue: 'Add to Bookshelf' })}
-            removeLabel={t('removeFromBookshelf', { defaultValue: 'Remove from Bookshelf' })}
-          />
-        </div>
-      </div>
-    </div>
-  );
+export default async function StoryDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string; locale: string }>;
+}) {
+  return <StoryDetailClient />;
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
+// Translations: getCachedTranslation uses unstable_cache (queries.ts) for deduplication and 1h revalidation; revalidateTag('translations') from admin clears cache.
 import { createClient } from '@/lib/supabase/server';
 import {
   getBookByIdOrNull,

@@ -247,6 +247,23 @@ export const getCachedTranslation = unstable_cache(
   { revalidate: 3600, tags: ['translations'] }
 );
 
+/** Cached book metadata for OG/social (title, description, coverUrl). Deduped with page data fetch. */
+async function getBookMetadataForOG(bookId: string, locale: Locale): Promise<{ title: string; description: string; coverUrl: string | null } | null> {
+  const client = getAnonClient();
+  const book = await getBookByIdOrNull(client, bookId);
+  if (!book) return null;
+  const title = getBookTitleForLang(book, locale);
+  const description = getBookDescriptionForLang(book, locale) || book.description || '';
+  const coverUrl = getBookCoverForLang(book, locale) || book.cover_url || null;
+  return { title, description: description.slice(0, 160), coverUrl };
+}
+
+export const getCachedBookMetadata = unstable_cache(
+  getBookMetadataForOG,
+  ['book-og'],
+  { revalidate: 3600, tags: ['books'] }
+);
+
 export async function upsertTranslation(
   client: SupabaseClient,
   chapterId: string,

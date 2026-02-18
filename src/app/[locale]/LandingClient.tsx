@@ -9,6 +9,7 @@ import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import { AuthModal } from '@/components/AuthModal';
 import { CoverImage } from '@/components/CoverImage';
 import { BookOpen, Layers, Search, X } from 'lucide-react';
+import { ShareButton } from '@/components/ShareButton';
 
 interface BookItem {
   id: string;
@@ -38,6 +39,8 @@ interface LandingClientProps {
     searchPlaceholder: string;
     expand: string;
     collapse: string;
+    share: string;
+    linkCopied: string;
   };
 }
 
@@ -210,7 +213,7 @@ export function LandingClient({ locale, user, profileLabel, slogan, trendingSubt
                     )}
                   </div>
                 )}
-                <div className="flex flex-wrap justify-center md:justify-start gap-3">
+                <div className="flex flex-wrap justify-center md:justify-start gap-3 items-center">
                   <Link
                     href={`/${locale}/story/${featured.id}/read`}
                     className="inline-flex items-center gap-2 rounded-md px-6 py-3 text-sm font-medium bg-amber-500 text-slate-950 hover:bg-amber-400 shadow-lg shadow-amber-500/25 transition-colors"
@@ -218,6 +221,16 @@ export function LandingClient({ locale, user, profileLabel, slogan, trendingSubt
                     <BookOpen className="h-4 w-4" />
                     {t.readNow}
                   </Link>
+                  <ShareButton
+                    title={featured.title}
+                    text={featured.description ? featured.description.slice(0, 160) : undefined}
+                    url={`/${locale}/story/${featured.id}`}
+                    label={t.share}
+                    copiedLabel={t.linkCopied}
+                    variant="outline"
+                    size="default"
+                    className="[&_button]:border-slate-600 [&_button]:text-slate-200 [&_button]:hover:bg-slate-800 [&_button]:hover:text-white [&_button]:px-6 [&_button]:py-3"
+                  />
                   <Link
                     href={`/${locale}/story/${featured.id}`}
                     className="inline-flex items-center gap-2 rounded-md border border-slate-600 px-6 py-3 text-sm font-medium text-slate-200 hover:bg-slate-800 hover:text-white transition-colors"

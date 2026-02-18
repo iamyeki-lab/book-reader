@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
 import { useBooks } from '@/hooks/useRemoteBooks';
 import { CoverImage } from '@/components/CoverImage';
+import { ShareButton } from '@/components/ShareButton';
 import { SimpleNav } from '@/components/SimpleNav';
 import type { Locale } from '@/lib/supabase/types';
 
@@ -54,11 +55,9 @@ export default function ExplorePage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05 }}
+              className="flex flex-col rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all p-3 hover:scale-[1.02]"
             >
-              <Link
-                href={`/${locale}/story/${book.id}`}
-                className="flex gap-4 rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all p-3 hover:scale-[1.02]"
-              >
+              <Link href={`/${locale}/story/${book.id}`} className="flex gap-4 min-w-0">
                 <CoverImage
                   src={book.cover_url}
                   placeholderText={book.title.slice(0, 2)}
@@ -73,6 +72,16 @@ export default function ExplorePage() {
                   <span className="text-sm text-primary mt-2">{t('startReading')} →</span>
                 </div>
               </Link>
+              <div className="mt-2 flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
+                <ShareButton
+                  title={book.title}
+                  url={`/${locale}/story/${book.id}`}
+                  label={t('share', { defaultValue: 'Share' })}
+                  copiedLabel={t('linkCopied', { defaultValue: 'Link Copied!' })}
+                  variant="ghost"
+                  size="sm"
+                />
+              </div>
             </motion.div>
           ))}
         </div>

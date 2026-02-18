@@ -53,6 +53,8 @@ export default async function LandingPage({
         searchPlaceholder: tExplore('searchPlaceholder'),
         expand: t('expand', { defaultValue: 'Expand' }),
         collapse: t('collapse', { defaultValue: 'Collapse' }),
+        share: t('share', { defaultValue: 'Share' }),
+        linkCopied: t('linkCopied', { defaultValue: 'Link Copied!' }),
       }}
     />
   );

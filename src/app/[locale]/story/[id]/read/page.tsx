@@ -12,6 +12,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Settings, List, Home } from 'lucide-react';
 import { useBookDetail } from '@/hooks/useRemoteBooks';
 import { Button } from '@/components/ui/button';
+import { ShareButton } from '@/components/ShareButton';
 import type { Locale } from '@/lib/supabase/types';
 
 const STORAGE_PROGRESS = 'reader-progress-';
@@ -288,6 +289,14 @@ export default function ReaderPage() {
             <List className="h-3.5 w-3 sm:me-1" />
             <span className="hidden sm:inline">{t('toc', { defaultValue: 'Chapters' })}</span>
           </Button>
+          <ShareButton
+            title={detail ? `${detail.book.title} - ${t('chapterTitle', { n: currentChapter.chapter_number })}` : ''}
+            label={t('share', { defaultValue: 'Share' })}
+            copiedLabel={t('linkCopied', { defaultValue: 'Link Copied!' })}
+            variant="outline"
+            size="sm"
+            className="shrink-0 h-9 min-h-[44px] px-2 text-xs"
+          />
           <Button
             variant="outline"
             size="sm"
