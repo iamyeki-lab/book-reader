@@ -42,9 +42,10 @@ export function LocaleSwitcher() {
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
         <DropdownMenu.Content
-          className="min-w-[140px] rounded-lg border border-slate-700 bg-slate-900 py-1 shadow-xl"
+          className="z-[99999] min-w-[140px] rounded-lg border border-slate-700 bg-slate-900 py-1 shadow-xl"
           sideOffset={6}
           align="end"
+          collisionPadding={16}
         >
           {LOCALES.map((loc) => (
             <DropdownMenu.Item key={loc.code} asChild>

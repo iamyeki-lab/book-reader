@@ -59,29 +59,29 @@ export function LandingClient({ locale, user, profileLabel, slogan, trendingSubt
 
   return (
     <div className="min-h-screen bg-slate-950">
-      {/* Top Nav - 与参考图一致 */}
-      <nav className="sticky top-0 z-50 flex min-h-[52px] items-center justify-between border-b border-slate-800/50 bg-slate-950/85 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-md">
-        <Link href={`/${locale}`} className="font-display text-lg font-bold text-amber-400">
-          STORYREALM
-        </Link>
-        <div className="flex items-center gap-2 md:gap-4">
+      {/* Top Nav - 移动端优化：搜索展开时两行布局，避免语言选择被遮挡 */}
+      <nav className="sticky top-0 z-[100] isolate flex flex-col border-b border-slate-800/50 bg-slate-950 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-md">
+        <div className="flex min-h-[52px] items-center justify-between gap-2">
+          <Link href={`/${locale}`} className="shrink-0 font-display text-lg font-bold text-amber-400">
+            STORYREALM
+          </Link>
           {showSearch ? (
-            <form onSubmit={handleSearchSubmit} className="flex flex-1 max-w-[200px] sm:max-w-[240px]">
+            <form onSubmit={handleSearchSubmit} className="flex flex-1 min-w-0 max-w-[200px] sm:max-w-[280px]">
               <input
                 type="search"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder={t.searchPlaceholder}
                 autoFocus
-                className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-1.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                className="w-full min-w-0 rounded-md border border-slate-700 bg-slate-900 px-3 py-1.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
               />
-              <button type="submit" className="ml-1 flex min-h-[36px] min-w-[36px] items-center justify-center rounded-md bg-amber-500 p-1.5 text-slate-950 hover:bg-amber-400">
+              <button type="submit" className="ml-1 flex shrink-0 min-h-[36px] min-w-[36px] items-center justify-center rounded-md bg-amber-500 p-1.5 text-slate-950 hover:bg-amber-400">
                 <Search className="h-4 w-4" />
               </button>
               <button
                 type="button"
                 onClick={() => { setShowSearch(false); setSearchInput(''); }}
-                className="ml-1 flex min-h-[36px] min-w-[36px] items-center justify-center rounded-md p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white"
+                className="ml-1 flex shrink-0 min-h-[36px] min-w-[36px] items-center justify-center rounded-md p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white"
                 aria-label="关闭搜索"
               >
                 <X className="h-4 w-4" />
@@ -91,14 +91,15 @@ export function LandingClient({ locale, user, profileLabel, slogan, trendingSubt
             <button
               type="button"
               onClick={() => setShowSearch(true)}
-              className="flex min-h-[44px] min-w-[44px] touch-manipulation items-center justify-center rounded-md p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+              className="flex shrink-0 min-h-[44px] min-w-[44px] touch-manipulation items-center justify-center rounded-md p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
               aria-label="搜索"
             >
               <Search className="h-4 w-4" />
             </button>
           )}
-          <LocaleSwitcher />
-          {user ? (
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+            <LocaleSwitcher />
+            {user ? (
             <Link
               href={`/${locale}/profile`}
               className="inline-flex min-h-[44px] touch-manipulation items-center justify-center rounded-md px-4 py-2 text-sm font-medium bg-amber-500 text-slate-950 hover:bg-amber-400 transition-colors"
@@ -123,12 +124,13 @@ export function LandingClient({ locale, user, profileLabel, slogan, trendingSubt
               </button>
               <AuthModal open={authOpen} onOpenChange={setAuthOpen} defaultTab={authTab} />
             </>
-          )}
+            )}
+          </div>
         </div>
       </nav>
 
-      {/* Hero - 精选书籍：左侧封面，右侧标题/简介/按钮 */}
-      <section className="relative min-h-[60vh] flex flex-col md:flex-row items-center justify-center px-4 py-12 md:py-16">
+      {/* Hero - 精选书籍：z-0 确保不遮挡导航与下拉菜单 */}
+      <section className="relative z-0 min-h-[60vh] flex flex-col md:flex-row items-center justify-center px-4 py-12 md:py-16">
         <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950">
           <Image
             src="/img/beijing.jpeg"
