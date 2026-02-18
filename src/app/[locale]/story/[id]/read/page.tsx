@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Settings, List } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Settings, List, Home } from 'lucide-react';
 import { useBookDetail } from '@/hooks/useRemoteBooks';
 import { Button } from '@/components/ui/button';
 import type { Locale } from '@/lib/supabase/types';
@@ -261,12 +261,20 @@ export default function ReaderPage() {
   return (
     <div className={`min-h-screen ${themeClass}`} dir={isRtl ? 'rtl' : 'ltr'}>
       <header className="sticky top-0 z-10 flex min-h-[52px] items-center justify-between gap-2 border-b border-border bg-background/95 px-3 sm:px-4 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <Button variant="ghost" size="sm" asChild className="min-h-[44px] min-w-[44px] shrink-0 -ml-2">
-          <Link href={`/${locale}/story/${id}`} className="flex items-center gap-1">
-            <ChevronLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">{t('back')}</span>
-          </Link>
-        </Button>
+        <div className="flex items-center gap-1 shrink-0">
+          <Button variant="ghost" size="sm" asChild className="min-h-[44px] min-w-[44px] -ml-2">
+            <Link href={`/${locale}/story/${id}`} className="flex items-center gap-1">
+              <ChevronLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('back')}</span>
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" asChild className="min-h-[44px] min-w-[44px] px-2">
+            <Link href={`/${locale}`} className="flex items-center gap-1" title={t('backToHome', { defaultValue: 'Back to home' })}>
+              <Home className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('backToHome', { defaultValue: 'Home' })}</span>
+            </Link>
+          </Button>
+        </div>
         <div className="flex items-center gap-1 sm:gap-2 min-w-0">
           <Button
             variant="outline"
