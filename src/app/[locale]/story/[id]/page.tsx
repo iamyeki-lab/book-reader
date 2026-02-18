@@ -79,7 +79,7 @@ export async function generateMetadata({
 }
 
 export default async function StoryDetailPage({
-  params,
+  params: _params,
 }: {
   params: Promise<{ id: string; locale: string }>;
 }) {
