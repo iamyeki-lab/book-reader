@@ -69,7 +69,7 @@ export default async function AdminDashboardPage() {
 
     users = usersRes.data?.users ?? [];
     adminEmails = new Set(
-      (adminEmailsRes.data ?? []).map((a: { email?: string }) => a.email).filter(Boolean)
+      (adminEmailsRes.data ?? []).map((a: { email?: string }) => a.email).filter((e): e is string => Boolean(e))
     );
     books = (booksRes.data ?? []) as { id: string; title: string; published: boolean }[];
     chaptersCount = chaptersRes.count ?? 0;
