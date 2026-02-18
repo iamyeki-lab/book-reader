@@ -79,9 +79,10 @@ export async function generateMetadata({
 }
 
 export default async function StoryDetailPage({
-  params: _params,
+  params,
 }: {
   params: Promise<{ id: string; locale: string }>;
 }) {
+  void params; // required by Next.js route, used by framework
   return <StoryDetailClient />;
 }
