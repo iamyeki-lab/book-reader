@@ -9,6 +9,10 @@ const amiri = Amiri({ weight: ['400', '700'], subsets: ['arabic'], variable: '--
 export const metadata: Metadata = {
   title: 'StoryRealm - Read Web Novels',
   description: 'Read web novels in your language',
+  icons: {
+    icon: '/img/logo.jpeg',
+    apple: '/img/logo.jpeg',
+  },
 };
 
 export const viewport: Viewport = {

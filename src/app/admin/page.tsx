@@ -58,13 +58,13 @@ export default async function AdminDashboardPage() {
       purchasesRes,
       feedbackRes,
     ] = await Promise.all([
-      admin.auth.admin.listUsers({ perPage: 1000 }).catch(() => ({ data: { users: [] } })),
-      admin.from('admin_users').select('email').then((r) => r).catch(() => ({ data: [] })),
-      admin.from('books').select('id, title, published').eq('published', true).then((r) => r).catch(() => ({ data: [] })),
-      admin.from('chapters').select('id', { count: 'exact', head: true }).then((r) => r).catch(() => ({ count: 0 })),
-      admin.from('translations').select('id', { count: 'exact', head: true }).then((r) => r).catch(() => ({ count: 0 })),
-      admin.from('chapter_purchases').select('book_id, credits_spent, created_at').then((r) => r).catch(() => ({ data: [] })),
-      admin.from('feedback_messages').select('id, admin_reply').then((r) => r).catch(() => ({ data: [] })),
+      Promise.resolve(admin.auth.admin.listUsers({ perPage: 1000 })).catch(() => ({ data: { users: [] } })),
+      Promise.resolve(admin.from('admin_users').select('email')).catch(() => ({ data: [] })),
+      Promise.resolve(admin.from('books').select('id, title, published').eq('published', true)).catch(() => ({ data: [] })),
+      Promise.resolve(admin.from('chapters').select('id', { count: 'exact', head: true })).catch(() => ({ count: 0 })),
+      Promise.resolve(admin.from('translations').select('id', { count: 'exact', head: true })).catch(() => ({ count: 0 })),
+      Promise.resolve(admin.from('chapter_purchases').select('book_id, credits_spent, created_at')).catch(() => ({ data: [] })),
+      Promise.resolve(admin.from('feedback_messages').select('id, admin_reply')).catch(() => ({ data: [] })),
     ]);
 
     users = usersRes.data?.users ?? [];
