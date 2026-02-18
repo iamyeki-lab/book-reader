@@ -27,6 +27,7 @@ export async function getCurrentAdminEmail(): Promise<string | null> {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
-  const { data } = await adminClient.from('admin_users').select('email').eq('email', email).single();
-  return data ? email : null;
+  const { data, error } = await adminClient.from('admin_users').select('email').eq('email', email).maybeSingle();
+  if (error || !data) return null;
+  return email;
 }

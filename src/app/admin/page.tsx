@@ -40,39 +40,52 @@ export default async function AdminDashboardPage() {
   const monthStart = startOfMonth(new Date(now.getTime()));
   const yearStart = startOfYear(new Date(now.getTime()));
 
-  const [
-    usersRes,
-    adminEmailsRes,
-    booksRes,
-    chaptersRes,
-    translationsRes,
-    purchasesRes,
-    feedbackRes,
-  ] = await Promise.all([
-    admin.auth.admin.listUsers({ perPage: 1000 }),
-    admin.from('admin_users').select('email'),
-    admin.from('books').select('id, title, published').eq('published', true),
-    admin.from('chapters').select('id', { count: 'exact', head: true }),
-    admin.from('translations').select('id', { count: 'exact', head: true }),
-    admin.from('chapter_purchases').select('book_id, credits_spent, created_at'),
-    admin.from('feedback_messages').select('id, admin_reply'),
-  ]);
+  let users: { email?: string; created_at?: string }[] = [];
+  let adminEmails = new Set<string>();
+  let books: { id: string; title: string; published: boolean }[] = [];
+  let chaptersCount = 0;
+  let translationsCount = 0;
+  let purchases: { book_id: string; credits_spent: number; created_at: string }[] = [];
+  let feedbackList: { id: string; admin_reply: string | null }[] = [];
 
-  const users = usersRes.data?.users ?? [];
-  const adminEmails = new Set(
-    (adminEmailsRes.data ?? []).map((a: { email?: string }) => a.email)
-  );
+  try {
+    const [
+      usersRes,
+      adminEmailsRes,
+      booksRes,
+      chaptersRes,
+      translationsRes,
+      purchasesRes,
+      feedbackRes,
+    ] = await Promise.all([
+      admin.auth.admin.listUsers({ perPage: 1000 }).catch(() => ({ data: { users: [] } })),
+      admin.from('admin_users').select('email').then((r) => r).catch(() => ({ data: [] })),
+      admin.from('books').select('id, title, published').eq('published', true).then((r) => r).catch(() => ({ data: [] })),
+      admin.from('chapters').select('id', { count: 'exact', head: true }).then((r) => r).catch(() => ({ count: 0 })),
+      admin.from('translations').select('id', { count: 'exact', head: true }).then((r) => r).catch(() => ({ count: 0 })),
+      admin.from('chapter_purchases').select('book_id, credits_spent, created_at').then((r) => r).catch(() => ({ data: [] })),
+      admin.from('feedback_messages').select('id, admin_reply').then((r) => r).catch(() => ({ data: [] })),
+    ]);
+
+    users = usersRes.data?.users ?? [];
+    adminEmails = new Set(
+      (adminEmailsRes.data ?? []).map((a: { email?: string }) => a.email).filter(Boolean)
+    );
+    books = (booksRes.data ?? []) as { id: string; title: string; published: boolean }[];
+    chaptersCount = chaptersRes.count ?? 0;
+    translationsCount = translationsRes.count ?? 0;
+    purchases = (purchasesRes.data ?? []) as {
+      book_id: string;
+      credits_spent: number;
+      created_at: string;
+    }[];
+    feedbackList = (feedbackRes.data ?? []) as { id: string; admin_reply: string | null }[];
+  } catch (e) {
+    console.error('Admin dashboard data fetch error:', e);
+  }
+
   const readers = users.filter((u) => !adminEmails.has(u.email ?? ''));
-  const books = (booksRes.data ?? []) as { id: string; title: string; published: boolean }[];
   const bookMap = new Map(books.map((b) => [b.id, b.title]));
-  const chaptersCount = chaptersRes.count ?? 0;
-  const translationsCount = translationsRes.count ?? 0;
-  const purchases = (purchasesRes.data ?? []) as {
-    book_id: string;
-    credits_spent: number;
-    created_at: string;
-  }[];
-  const feedbackList = (feedbackRes.data ?? []) as { id: string; admin_reply: string | null }[];
 
   const readersToday = readers.filter((u) => u.created_at && u.created_at >= dayStart).length;
   const readersThisMonth = readers.filter((u) => u.created_at && u.created_at >= monthStart).length;

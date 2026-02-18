@@ -8,7 +8,12 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const email = await getCurrentAdminEmail();
+  let email: string | null = null;
+  try {
+    email = await getCurrentAdminEmail();
+  } catch (e) {
+    console.error('Admin layout getCurrentAdminEmail:', e);
+  }
 
   return (
     <div className="flex min-h-screen bg-background" lang="zh-CN">
