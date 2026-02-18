@@ -229,7 +229,7 @@ export function LandingClient({ locale, user, profileLabel, slogan, trendingSubt
                     copiedLabel={t.linkCopied}
                     variant="outline"
                     size="default"
-                    className="[&_button]:border-slate-600 [&_button]:text-slate-200 [&_button]:hover:bg-slate-800 [&_button]:hover:text-white [&_button]:px-6 [&_button]:py-3"
+                    className="[&_button]:border-slate-400 [&_button]:text-black [&_button]:hover:bg-slate-100 [&_button]:px-6 [&_button]:py-3"
                   />
                   <Link
                     href={`/${locale}/story/${featured.id}`}
