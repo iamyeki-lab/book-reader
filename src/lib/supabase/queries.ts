@@ -4,7 +4,6 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import type { Locale } from './types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { BookRow, ChapterRow, TranslationRow, GlossaryRow } from './types';
-import { createClient } from '@/lib/supabase/server';
 
 // --- Books ---
 export async function getBooks(
