@@ -6,7 +6,6 @@ import {
   getBookByIdOrNull,
   getChaptersByBookId,
   getCachedTranslation,
-  getTranslationsByBookIdAndLang,
   getTranslationsByBookIdAndLangUpdatedSince,
   getBookTitleForLang,
   getBookCoverForLang,
