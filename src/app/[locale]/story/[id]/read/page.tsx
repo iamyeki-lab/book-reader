@@ -165,6 +165,12 @@ export default function ReaderPage() {
     };
   }, [id, detail]);
 
+  const scrollToTop = useCallback(() => {
+    window.scrollTo(0, 0);
+    const el = document.getElementById('reader-content');
+    if (el) el.scrollTop = 0;
+  }, []);
+
   // When URL has ?ch=, sync to state (so Link navigation works); progress effect handles initial load when no ch
   useEffect(() => {
     if (!id || !detail) return;
@@ -191,12 +197,6 @@ export default function ReaderPage() {
       JSON.stringify({ theme: th ?? theme, fontSize: fs ?? fontSize })
     );
   };
-
-  const scrollToTop = useCallback(() => {
-    window.scrollTo(0, 0);
-    const el = document.getElementById('reader-content');
-    if (el) el.scrollTop = 0;
-  }, []);
 
   if (loading) {
     return (
