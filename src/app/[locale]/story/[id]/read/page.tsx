@@ -263,9 +263,9 @@ export default function ReaderPage() {
 
   return (
     <div className={`min-h-screen ${themeClass}`} dir={isRtl ? 'rtl' : 'ltr'}>
-      {/* Toolbar: inherit theme text so buttons stay readable in dark/sepia/warm */}
-      <header className="sticky top-0 z-10 flex min-h-[52px] items-center justify-between gap-2 border-b border-current/20 bg-inherit text-inherit px-3 sm:px-4 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-inherit/80">
-        <div className="flex items-center gap-1 shrink-0">
+      {/* Toolbar: inherit theme text; overflow-x-auto so buttons don't overflow on narrow screens */}
+      <header className="sticky top-0 z-10 flex min-h-[52px] items-center justify-between gap-2 border-b border-current/20 bg-inherit text-inherit px-3 sm:px-4 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-inherit/80 overflow-x-auto flex-nowrap">
+        <div className="flex items-center gap-1 shrink-0 flex-nowrap">
           <Button variant="ghost" size="sm" asChild className="min-h-[44px] min-w-[44px] -ml-2 text-inherit hover:bg-current/10">
             <Link href={`/${locale}/story/${id}`} className="flex items-center gap-1">
               <ChevronLeft className="h-4 w-4" />
@@ -279,7 +279,7 @@ export default function ReaderPage() {
             </Link>
           </Button>
         </div>
-        <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+        <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-nowrap overflow-x-auto">
           <Button
             variant="outline"
             size="sm"
@@ -337,7 +337,7 @@ export default function ReaderPage() {
       </header>
 
       {showToc && (
-        <div className="border-b border-current/20 bg-inherit px-3 py-2 max-h-[45vh] overflow-y-auto overscroll-contain">
+        <div className="border-b border-current/20 bg-inherit text-inherit px-3 py-2 max-h-[45vh] overflow-y-auto overscroll-contain">
           <p className="text-xs opacity-70 mb-1.5 sticky top-0 bg-inherit py-0.5 z-10">{t('toc', { defaultValue: 'Chapters' })}</p>
           <ul className="flex flex-col gap-px text-sm">
             {sortedChapters.map((ch, idx) => (
@@ -350,8 +350,8 @@ export default function ReaderPage() {
                     idx === chapterIndex
                       ? 'bg-primary text-primary-foreground'
                       : canReadChapter(ch)
-                        ? 'text-foreground hover:bg-muted'
-                        : 'text-muted-foreground hover:bg-muted/50'
+                        ? 'text-inherit hover:bg-current/10'
+                        : 'text-inherit opacity-60 hover:bg-current/5'
                   }`}
                 >
                   {t('chapterTitle', { n: ch.chapter_number })}
