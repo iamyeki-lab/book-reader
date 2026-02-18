@@ -263,15 +263,16 @@ export default function ReaderPage() {
 
   return (
     <div className={`min-h-screen ${themeClass}`} dir={isRtl ? 'rtl' : 'ltr'}>
+      {/* Toolbar: inherit theme text so buttons stay readable in dark/sepia/warm */}
       <header className="sticky top-0 z-10 flex min-h-[52px] items-center justify-between gap-2 border-b border-current/20 bg-inherit text-inherit px-3 sm:px-4 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-inherit/80">
         <div className="flex items-center gap-1 shrink-0">
-          <Button variant="ghost" size="sm" asChild className="min-h-[44px] min-w-[44px] -ml-2">
+          <Button variant="ghost" size="sm" asChild className="min-h-[44px] min-w-[44px] -ml-2 text-inherit hover:bg-current/10">
             <Link href={`/${locale}/story/${id}`} className="flex items-center gap-1">
               <ChevronLeft className="h-4 w-4" />
               <span className="hidden sm:inline">{t('back')}</span>
             </Link>
           </Button>
-          <Button variant="ghost" size="sm" asChild className="min-h-[44px] min-w-[44px] px-2">
+          <Button variant="ghost" size="sm" asChild className="min-h-[44px] min-w-[44px] px-2 text-inherit hover:bg-current/10">
             <Link href={`/${locale}`} className="flex items-center gap-1" title={t('backToHome', { defaultValue: 'Back to home' })}>
               <Home className="h-4 w-4" />
               <span className="hidden sm:inline">{t('backToHome', { defaultValue: 'Home' })}</span>
@@ -283,7 +284,7 @@ export default function ReaderPage() {
             variant="outline"
             size="sm"
             onClick={() => setShowToc(!showToc)}
-            className="h-9 min-h-[44px] min-w-[44px] px-2 text-xs shrink-0"
+            className="h-9 min-h-[44px] min-w-[44px] px-2 text-xs shrink-0 text-inherit border-current/50 bg-transparent hover:bg-current/10"
             title={t('toc', { defaultValue: 'Chapter list' })}
           >
             <List className="h-3.5 w-3 sm:me-1" />
@@ -296,24 +297,25 @@ export default function ReaderPage() {
             variant="outline"
             size="sm"
             className="shrink-0 h-9 min-h-[44px] px-2 text-xs"
+            buttonClassName="!text-inherit border-current/50 bg-transparent hover:bg-current/10"
           />
           <Button
             variant="outline"
             size="sm"
             onClick={() => setShowSettings(!showSettings)}
-            className="h-9 min-h-[44px] min-w-[44px] px-2 text-xs shrink-0"
+            className="h-9 min-h-[44px] min-w-[44px] px-2 text-xs shrink-0 text-inherit border-current/50 bg-transparent hover:bg-current/10"
           >
             <Settings className="h-3.5 w-3 sm:me-1" />
             <span className="hidden sm:inline">{t('settings')}</span>
           </Button>
           {chapterIndex > 0 ? (
-            <Button variant="outline" size="sm" asChild className="h-9 min-h-[44px] min-w-[44px] p-0 shrink-0">
+            <Button variant="outline" size="sm" asChild className="h-9 min-h-[44px] min-w-[44px] p-0 shrink-0 text-inherit border-current/50 bg-transparent hover:bg-current/10">
               <Link href={`/${locale}/story/${id}/read?ch=${chapterIndex - 1}`} prefetch={true}>
                 <ChevronLeft className="h-3.5 w-3" />
               </Link>
             </Button>
           ) : (
-            <Button variant="outline" size="sm" disabled className="h-9 min-h-[44px] min-w-[44px] p-0 shrink-0">
+            <Button variant="outline" size="sm" disabled className="h-9 min-h-[44px] min-w-[44px] p-0 shrink-0 text-inherit border-current/50 bg-transparent opacity-60">
               <ChevronLeft className="h-3.5 w-3" />
             </Button>
           )}
@@ -321,13 +323,13 @@ export default function ReaderPage() {
             {chapterIndex + 1}/{sortedChapters.length}
           </span>
           {chapterIndex < sortedChapters.length - 1 ? (
-            <Button variant="outline" size="sm" asChild className="h-9 min-h-[44px] min-w-[44px] p-0 shrink-0">
+            <Button variant="outline" size="sm" asChild className="h-9 min-h-[44px] min-w-[44px] p-0 shrink-0 text-inherit border-current/50 bg-transparent hover:bg-current/10">
               <Link href={`/${locale}/story/${id}/read?ch=${chapterIndex + 1}`} prefetch={true}>
                 <ChevronRight className="h-3.5 w-3" />
               </Link>
             </Button>
           ) : (
-            <Button variant="outline" size="sm" disabled className="h-9 min-h-[44px] min-w-[44px] p-0 shrink-0">
+            <Button variant="outline" size="sm" disabled className="h-9 min-h-[44px] min-w-[44px] p-0 shrink-0 text-inherit border-current/50 bg-transparent opacity-60">
               <ChevronRight className="h-3.5 w-3" />
             </Button>
           )}
@@ -361,7 +363,7 @@ export default function ReaderPage() {
       )}
 
       {showSettings && (
-        <div className="border-b border-current/20 bg-inherit px-4 py-3">
+        <div className="border-b border-current/20 bg-inherit text-inherit px-4 py-3">
           <div className="flex flex-wrap gap-4 sm:gap-6">
             <div>
               <label className="text-xs opacity-70 block mb-1">{t('theme')}</label>
@@ -375,7 +377,7 @@ export default function ReaderPage() {
                       setTheme(th);
                       saveSettings(th, undefined);
                     }}
-                    className="min-h-[44px] min-w-[44px] px-3 text-xs"
+                    className={`min-h-[44px] min-w-[44px] px-3 text-xs ${theme === th ? '' : 'text-inherit border-current/50 bg-transparent hover:bg-current/10'}`}
                   >
                     {t(th)}
                   </Button>
@@ -394,7 +396,7 @@ export default function ReaderPage() {
                       setFontSize(fs);
                       saveSettings(undefined, fs);
                     }}
-                    className="min-h-[44px] min-w-[44px] px-3 text-xs"
+                    className={`min-h-[44px] min-w-[44px] px-3 text-xs ${fontSize === fs ? '' : 'text-inherit border-current/50 bg-transparent hover:bg-current/10'}`}
                   >
                     {t(fs)}
                   </Button>

@@ -17,6 +17,8 @@ export interface ShareButtonProps {
   copiedLabel?: string;
   /** Optional className for the wrapper (e.g. for positioning toast) */
   className?: string;
+  /** Optional className for the inner button (e.g. text-inherit on reader dark theme) */
+  buttonClassName?: string;
   /** Button variant/size from shadcn */
   variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
   size?: 'default' | 'sm' | 'lg' | 'icon';
@@ -29,6 +31,7 @@ export function ShareButton({
   label = 'Share',
   copiedLabel = 'Link Copied!',
   className,
+  buttonClassName,
   variant = 'outline',
   size = 'sm',
 }: ShareButtonProps) {
@@ -68,7 +71,7 @@ export function ShareButton({
         variant={variant}
         size={size}
         onClick={handleClick}
-        className="gap-1.5"
+        className={`gap-1.5 text-black ${buttonClassName ?? ''}`}
         aria-label={label}
       >
         <Share2 className="h-4 w-4 rtl:ml-1.5 rtl:mr-0" aria-hidden />
