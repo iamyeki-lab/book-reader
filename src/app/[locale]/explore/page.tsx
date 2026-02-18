@@ -42,7 +42,7 @@ export default function ExplorePage() {
             className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
         </div>
-        {loading && <p className="text-muted-foreground">Loading...</p>}
+        {loading && <p className="text-muted-foreground">{t('loading', { defaultValue: 'Loading…' })}</p>}
         {error && <p className="text-destructive">Error: {error.message}</p>}
         {!loading && !error && books.length === 0 && (
           <p className="text-muted-foreground">{searchQuery ? t('noResults') : t('noBooks')}</p>

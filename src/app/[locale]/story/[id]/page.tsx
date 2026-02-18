@@ -21,7 +21,7 @@ export default function StoryDetailPage() {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto max-w-3xl px-4 py-16 text-center text-muted-foreground">
-          Loading...
+          {t('loading', { defaultValue: 'Loading…' })}
         </div>
       </div>
     );
@@ -30,7 +30,7 @@ export default function StoryDetailPage() {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto max-w-3xl px-4 py-16 text-center text-destructive">
-          Error loading book
+          {t('errorLoadingBook', { defaultValue: 'Error loading book' })}
         </div>
       </div>
     );

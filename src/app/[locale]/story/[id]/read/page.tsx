@@ -6,7 +6,7 @@
  * 登录后以服务端进度为准，若本地大于服务端会先同步到服务端再展示。
  */
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Settings, List, Home } from 'lucide-react';
@@ -67,6 +67,8 @@ type FontSize = 'small' | 'medium' | 'large';
 
 export default function ReaderPage() {
   const params = useParams();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const id = params?.id as string;
   const locale = (params?.locale as Locale) || 'en';
   const t = useTranslations('reader');
@@ -163,6 +165,21 @@ export default function ReaderPage() {
     };
   }, [id, detail]);
 
+  // When URL has ?ch=, sync to state (so Link navigation works); progress effect handles initial load when no ch
+  useEffect(() => {
+    if (!id || !detail) return;
+    const chParam = searchParams.get('ch');
+    if (chParam === null || chParam === '') return;
+    const chapters = [...(detail.chapters ?? [])].sort((a, b) => a.chapter_number - b.chapter_number);
+    const maxIdx = Math.max(0, chapters.length - 1);
+    const n = parseInt(chParam, 10);
+    if (Number.isNaN(n)) return;
+    const clamped = Math.max(0, Math.min(n, maxIdx));
+    setChapterIndex(clamped);
+    saveProgress(clamped, 0);
+    scrollToTop();
+  }, [id, detail, searchParams, saveProgress, scrollToTop]);
+
   useEffect(() => {
     const readerEl = document.getElementById('reader-content');
     if (readerEl) readerEl.scrollTop = scrollTop;
@@ -184,14 +201,14 @@ export default function ReaderPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background p-8 flex items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
+        <p className="text-muted-foreground">{t('loading', { defaultValue: 'Loading…' })}</p>
       </div>
     );
   }
   if (error || !detail) {
     return (
       <div className="min-h-screen bg-background p-8 flex flex-col items-center justify-center gap-4">
-        <p className="text-destructive">{error?.message ?? 'Error loading book'}</p>
+        <p className="text-destructive">{error?.message ?? t('errorLoadingBook', { defaultValue: 'Error loading book' })}</p>
         <Button variant="outline" asChild>
           <Link href={`/${locale}/explore`}>返回探索</Link>
         </Button>
@@ -208,30 +225,15 @@ export default function ReaderPage() {
     ch.chapter_number <= freeChapters || purchasedIds.has(ch.id);
   const currentLocked = currentChapter && !canReadChapter(currentChapter);
 
-  const goPrev = () => {
-    if (chapterIndex > 0) {
-      setScrollTop(0);
-      setChapterIndex(chapterIndex - 1);
-      saveProgress(chapterIndex - 1, 0);
-      scrollToTop();
-    }
-  };
-
-  const goNext = () => {
-    if (chapterIndex < sortedChapters.length - 1) {
-      setScrollTop(0);
-      setChapterIndex(chapterIndex + 1);
-      saveProgress(chapterIndex + 1, 0);
-      scrollToTop();
-    }
-  };
-
   const goToChapter = (idx: number) => {
     setScrollTop(0);
     setChapterIndex(idx);
     saveProgress(idx, 0);
     setShowToc(false);
     scrollToTop();
+    const path = `/${locale}/story/${id}/read`;
+    const href = idx > 0 ? `${path}?ch=${idx}` : path;
+    router.replace(href, { scroll: false });
   };
 
   const onScroll = () => {
@@ -295,27 +297,31 @@ export default function ReaderPage() {
             <Settings className="h-3.5 w-3 sm:me-1" />
             <span className="hidden sm:inline">{t('settings')}</span>
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={goPrev}
-            disabled={chapterIndex === 0}
-            className="h-9 min-h-[44px] min-w-[44px] p-0 shrink-0"
-          >
-            <ChevronLeft className="h-3.5 w-3" />
-          </Button>
+          {chapterIndex > 0 ? (
+            <Button variant="outline" size="sm" asChild className="h-9 min-h-[44px] min-w-[44px] p-0 shrink-0">
+              <Link href={`/${locale}/story/${id}/read?ch=${chapterIndex - 1}`} prefetch={true}>
+                <ChevronLeft className="h-3.5 w-3" />
+              </Link>
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" disabled className="h-9 min-h-[44px] min-w-[44px] p-0 shrink-0">
+              <ChevronLeft className="h-3.5 w-3" />
+            </Button>
+          )}
           <span className="text-xs sm:text-sm text-muted-foreground min-w-[3rem] sm:min-w-[4rem] text-center shrink-0">
             {chapterIndex + 1}/{sortedChapters.length}
           </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={goNext}
-            disabled={chapterIndex >= sortedChapters.length - 1}
-            className="h-9 min-h-[44px] min-w-[44px] p-0 shrink-0"
-          >
-            <ChevronRight className="h-3.5 w-3" />
-          </Button>
+          {chapterIndex < sortedChapters.length - 1 ? (
+            <Button variant="outline" size="sm" asChild className="h-9 min-h-[44px] min-w-[44px] p-0 shrink-0">
+              <Link href={`/${locale}/story/${id}/read?ch=${chapterIndex + 1}`} prefetch={true}>
+                <ChevronRight className="h-3.5 w-3" />
+              </Link>
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" disabled className="h-9 min-h-[44px] min-w-[44px] p-0 shrink-0">
+              <ChevronRight className="h-3.5 w-3" />
+            </Button>
+          )}
         </div>
       </header>
 
@@ -328,6 +334,7 @@ export default function ReaderPage() {
                 <button
                   type="button"
                   onClick={() => goToChapter(idx)}
+                  onMouseEnter={() => router.prefetch(`/${locale}/story/${id}/read?ch=${idx}`)}
                   className={`w-full text-left py-2 px-2.5 rounded truncate touch-manipulation ${
                     idx === chapterIndex
                       ? 'bg-primary text-primary-foreground'
@@ -431,22 +438,32 @@ export default function ReaderPage() {
 
       <nav className="border-t border-current/20 pt-4 sm:pt-6 px-4 pb-[max(2rem,env(safe-area-inset-bottom))]">
         <div className="mx-auto max-w-3xl flex justify-between text-sm">
-          <button
-            type="button"
-            onClick={goPrev}
-            disabled={chapterIndex === 0}
-            className={`min-h-[44px] min-w-[44px] -mx-2 px-2 inline-flex items-center touch-manipulation ${chapterIndex === 0 ? 'text-muted-foreground cursor-not-allowed' : 'text-primary hover:underline active:opacity-70'}`}
-          >
-            ← {t('previous')}
-          </button>
-          <button
-            type="button"
-            onClick={goNext}
-            disabled={chapterIndex >= sortedChapters.length - 1}
-            className={`min-h-[44px] min-w-[44px] -mx-2 px-2 inline-flex items-center touch-manipulation ${chapterIndex >= sortedChapters.length - 1 ? 'text-muted-foreground cursor-not-allowed' : 'text-primary hover:underline active:opacity-70'}`}
-          >
-            {t('next')} →
-          </button>
+          {chapterIndex > 0 ? (
+            <Link
+              href={`/${locale}/story/${id}/read?ch=${chapterIndex - 1}`}
+              prefetch={true}
+              className="min-h-[44px] min-w-[44px] -mx-2 px-2 inline-flex items-center touch-manipulation text-primary hover:underline active:opacity-70"
+            >
+              ← {t('previous')}
+            </Link>
+          ) : (
+            <span className="min-h-[44px] min-w-[44px] -mx-2 px-2 inline-flex items-center touch-manipulation text-muted-foreground cursor-not-allowed" aria-disabled="true">
+              ← {t('previous')}
+            </span>
+          )}
+          {chapterIndex < sortedChapters.length - 1 ? (
+            <Link
+              href={`/${locale}/story/${id}/read?ch=${chapterIndex + 1}`}
+              prefetch={true}
+              className="min-h-[44px] min-w-[44px] -mx-2 px-2 inline-flex items-center touch-manipulation text-primary hover:underline active:opacity-70"
+            >
+              {t('next')} →
+            </Link>
+          ) : (
+            <span className="min-h-[44px] min-w-[44px] -mx-2 px-2 inline-flex items-center touch-manipulation text-muted-foreground cursor-not-allowed" aria-disabled="true">
+              {t('next')} →
+            </span>
+          )}
         </div>
       </nav>
     </div>

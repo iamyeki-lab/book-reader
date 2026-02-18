@@ -1,7 +1,9 @@
 // AtoB: Supabase query helpers
+import { unstable_cache } from 'next/cache';
 import type { Locale } from './types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { BookRow, ChapterRow, TranslationRow, GlossaryRow } from './types';
+import { createClient } from '@/lib/supabase/server';
 
 // --- Books ---
 export async function getBooks(
@@ -210,6 +212,32 @@ export async function getTranslation(client: SupabaseClient, chapterId: string, 
   if (error) throw error;
   return data as TranslationRow | null;
 }
+
+/** Data Cache: single chapter translation by bookId + chapterNumber + lang. Revalidate 1h or via revalidateTag('translations'). */
+async function getTranslationByBookAndChapter(
+  bookId: string,
+  chapterNumber: number,
+  lang: string
+): Promise<TranslationRow | null> {
+  const client = await createClient();
+  const chapters = await getChaptersByBookId(client, bookId);
+  const ch = chapters.find((c) => c.chapter_number === chapterNumber);
+  if (!ch) return null;
+  const { data, error } = await client
+    .from('translations')
+    .select('*')
+    .eq('chapter_id', ch.id)
+    .eq('target_lang', lang)
+    .maybeSingle();
+  if (error) throw error;
+  return data as TranslationRow | null;
+}
+
+export const getCachedTranslation = unstable_cache(
+  getTranslationByBookAndChapter,
+  ['translation'],
+  { revalidate: 3600, tags: ['translations'] }
+);
 
 export async function upsertTranslation(
   client: SupabaseClient,

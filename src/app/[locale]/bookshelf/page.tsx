@@ -38,7 +38,7 @@ export default function BookshelfPage() {
         <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-8">
           {t('title', { defaultValue: 'My Bookshelf' })}
         </h1>
-        {loading && <p className="text-muted-foreground">Loading...</p>}
+        {loading && <p className="text-muted-foreground">{t('loading', { defaultValue: 'Loading…' })}</p>}
         {!loading && books.length === 0 && (
           <p className="text-muted-foreground">
             {t('empty', { defaultValue: 'No books in your bookshelf yet' })}

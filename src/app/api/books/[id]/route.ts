@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import {
   getBookByIdOrNull,
   getChaptersByBookId,
+  getCachedTranslation,
   getTranslationsByBookIdAndLang,
   getTranslationsByBookIdAndLangUpdatedSince,
   getBookTitleForLang,
@@ -30,9 +31,37 @@ export async function GET(
       return apiError('NOT_FOUND', 'Book not found', 404);
     }
     const chapters = await getChaptersByBookId(client, id);
-    const translations = since
-      ? await getTranslationsByBookIdAndLangUpdatedSince(client, id, lang, since)
-      : await getTranslationsByBookIdAndLang(client, id, lang);
+    let translations: Array<{ chapter_id: string; target_lang: string; translated_title: string; translated_content: string }>;
+    if (since) {
+      const raw = await getTranslationsByBookIdAndLangUpdatedSince(client, id, lang, since);
+      translations = raw.map((t) => ({
+        chapter_id: t.chapter_id,
+        target_lang: t.target_lang,
+        translated_title: t.translated_title,
+        translated_content: t.translated_content,
+      }));
+    } else {
+      const translationResults = await Promise.all(
+        chapters.map((c) => getCachedTranslation(id, c.chapter_number, lang))
+      );
+      translations = translationResults
+        .map((t, i) =>
+          t
+            ? {
+                chapter_id: chapters[i].id,
+                target_lang: t.target_lang,
+                translated_title: t.translated_title,
+                translated_content: t.translated_content,
+              }
+            : null
+        )
+        .filter(Boolean) as Array<{
+        chapter_id: string;
+        target_lang: string;
+        translated_title: string;
+        translated_content: string;
+      }>;
+    }
 
     const body = {
       book: {
