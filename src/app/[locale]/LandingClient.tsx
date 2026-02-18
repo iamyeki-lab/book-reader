@@ -59,46 +59,21 @@ export function LandingClient({ locale, user, profileLabel, slogan, trendingSubt
 
   return (
     <div className="min-h-screen bg-slate-950">
-      {/* Top Nav - 移动端优化：搜索展开时两行布局，避免语言选择被遮挡 */}
-      <nav className="sticky top-0 z-[100] isolate flex flex-col border-b border-slate-800/50 bg-slate-950 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-md">
-        <div className="flex min-h-[52px] items-center justify-between gap-2">
-          <Link href={`/${locale}`} className="flex shrink-0 items-center gap-2 font-display text-lg font-bold text-amber-400 hover:text-amber-300 transition-colors">
-            <Image src="/img/logo.jpeg" alt="StoryRealm" width={36} height={36} className="rounded-lg object-cover" />
-            <span className="hidden sm:inline">STORYREALM</span>
-          </Link>
-          {showSearch ? (
-            <form onSubmit={handleSearchSubmit} className="flex flex-1 min-w-0 max-w-[200px] sm:max-w-[280px]">
-              <input
-                type="search"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                placeholder={t.searchPlaceholder}
-                autoFocus
-                className="w-full min-w-0 rounded-md border border-slate-700 bg-slate-900 px-3 py-1.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
-              />
-              <button type="submit" className="ml-1 flex shrink-0 min-h-[36px] min-w-[36px] items-center justify-center rounded-md bg-amber-500 p-1.5 text-slate-950 hover:bg-amber-400">
-                <Search className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => { setShowSearch(false); setSearchInput(''); }}
-                className="ml-1 flex shrink-0 min-h-[36px] min-w-[36px] items-center justify-center rounded-md p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white"
-                aria-label="关闭搜索"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </form>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setShowSearch(true)}
-              className="flex shrink-0 min-h-[44px] min-w-[44px] touch-manipulation items-center justify-center rounded-md p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
-              aria-label="搜索"
-            >
-              <Search className="h-4 w-4" />
-            </button>
-          )}
-          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+      {/* Top Nav */}
+      <nav className="sticky top-0 z-[100] isolate flex min-h-[52px] items-center justify-between gap-2 border-b border-slate-800/50 bg-slate-950 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-md">
+        <Link href={`/${locale}`} className="flex shrink-0 items-center gap-2 font-display text-lg font-bold text-amber-400 hover:text-amber-300 transition-colors">
+          <Image src="/img/logo.jpeg" alt="StoryRealm" width={36} height={36} className="rounded-lg object-cover" />
+          <span className="hidden sm:inline">STORYREALM</span>
+        </Link>
+        <button
+          type="button"
+          onClick={() => setShowSearch(true)}
+          className="flex shrink-0 min-h-[44px] min-w-[44px] touch-manipulation items-center justify-center rounded-md p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+          aria-label="搜索"
+        >
+          <Search className="h-4 w-4" />
+        </button>
+        <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
             <LocaleSwitcher />
             {user ? (
             <Link
@@ -112,7 +87,7 @@ export function LandingClient({ locale, user, profileLabel, slogan, trendingSubt
               <button
                 type="button"
                 onClick={() => { setAuthTab('login'); setAuthOpen(true); }}
-                className="hidden sm:inline-flex min-h-[44px] touch-manipulation items-center text-sm text-slate-300 hover:text-white transition-colors py-2"
+                className="inline-flex min-h-[44px] touch-manipulation items-center px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-md transition-colors"
               >
                 {t.login}
               </button>
@@ -126,9 +101,50 @@ export function LandingClient({ locale, user, profileLabel, slogan, trendingSubt
               <AuthModal open={authOpen} onOpenChange={setAuthOpen} defaultTab={authTab} />
             </>
             )}
-          </div>
         </div>
       </nav>
+
+      {/* 弹出式搜索框 - 全屏遮罩 */}
+      {showSearch && (
+        <div
+          className="fixed inset-0 z-[110] flex flex-col bg-slate-950/95 backdrop-blur-md"
+          role="dialog"
+          aria-label="搜索"
+        >
+          <div className="flex min-h-[52px] shrink-0 items-center gap-2 px-4 pt-[env(safe-area-inset-top)]">
+            <form onSubmit={handleSearchSubmit} className="flex flex-1 min-w-0 items-center gap-2">
+              <input
+                type="search"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder={t.searchPlaceholder}
+                autoFocus
+                className="h-12 flex-1 min-w-0 rounded-lg border border-slate-600 bg-slate-800/90 px-4 py-3 text-base text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500 sm:text-lg"
+              />
+              <button
+                type="submit"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-amber-500 text-slate-950 hover:bg-amber-400"
+              >
+                <Search className="h-5 w-5" />
+              </button>
+            </form>
+            <button
+              type="button"
+              onClick={() => { setShowSearch(false); setSearchInput(''); }}
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white"
+              aria-label="关闭搜索"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+          <button
+            type="button"
+            className="flex-1"
+            onClick={() => { setShowSearch(false); setSearchInput(''); }}
+            aria-label="关闭"
+          />
+        </div>
+      )}
 
       {/* Hero - 精选书籍：z-0 确保不遮挡导航与下拉菜单 */}
       <section className="relative z-0 min-h-[60vh] flex flex-col md:flex-row items-center justify-center px-4 py-12 md:py-16">

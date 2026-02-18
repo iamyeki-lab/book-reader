@@ -45,6 +45,7 @@ export default async function ProfileSettingsPage({
           bio: t('bio'),
           save: t('save'),
           saving: t('saving'),
+          signOut: t('signOut'),
           avatar: {
             upload: t('avatar.upload'),
             uploading: t('avatar.uploading'),

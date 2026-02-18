@@ -18,6 +18,7 @@ interface ProfileSettingsFormProps {
     bio: string;
     save: string;
     saving: string;
+    signOut: string;
     avatar: { upload: string; uploading: string; change: string; formats: string };
   };
 }
@@ -98,6 +99,17 @@ export function ProfileSettingsForm({
 
           <SubmitButton label={t.save} savingLabel={t.saving} />
         </form>
+
+        <div className="mt-6 pt-6 border-t border-slate-800">
+          <form action={`/api/auth/signout?redirect=/${locale}`} method="post" className="inline">
+            <button
+              type="submit"
+              className="rounded-md border border-slate-600 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+            >
+              {t.signOut}
+            </button>
+          </form>
+        </div>
       </CardContent>
     </Card>
   );

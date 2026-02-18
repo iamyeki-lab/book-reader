@@ -53,18 +53,18 @@ export function AuthModal({ open, onOpenChange, defaultTab = 'login' }: AuthModa
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-lg border border-slate-700 bg-slate-900 p-6 shadow-xl max-h-[90vh] overflow-y-auto data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-lg border border-slate-700 bg-slate-900 p-6 pt-14 shadow-xl max-h-[90vh] overflow-y-auto data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
           <Dialog.Close asChild>
             <button
               type="button"
-              className="absolute right-2 top-2 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md text-slate-400 hover:bg-slate-800 hover:text-white transition-colors touch-manipulation"
+              className="absolute right-2 top-2 z-10 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors touch-manipulation"
               aria-label="Close"
             >
               <X className="h-5 w-5" />
             </button>
           </Dialog.Close>
           <Dialog.Title className="sr-only">{tab === 'login' ? t('signIn') : t('signUp')}</Dialog.Title>
-          <div className="flex gap-2 mb-6">
+          <div className="flex gap-2 mb-6 pr-12">
             <button
               type="button"
               onClick={() => { setTab('login'); setMessage(null); }}
