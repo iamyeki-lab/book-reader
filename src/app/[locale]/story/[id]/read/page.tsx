@@ -262,7 +262,7 @@ export default function ReaderPage() {
 
   return (
     <div className={`min-h-screen ${themeClass}`} dir={isRtl ? 'rtl' : 'ltr'}>
-      <header className="sticky top-0 z-10 flex min-h-[52px] items-center justify-between gap-2 border-b border-border bg-background/95 px-3 sm:px-4 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-0 z-10 flex min-h-[52px] items-center justify-between gap-2 border-b border-current/20 bg-inherit text-inherit px-3 sm:px-4 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-inherit/80">
         <div className="flex items-center gap-1 shrink-0">
           <Button variant="ghost" size="sm" asChild className="min-h-[44px] min-w-[44px] -ml-2">
             <Link href={`/${locale}/story/${id}`} className="flex items-center gap-1">
@@ -308,7 +308,7 @@ export default function ReaderPage() {
               <ChevronLeft className="h-3.5 w-3" />
             </Button>
           )}
-          <span className="text-xs sm:text-sm text-muted-foreground min-w-[3rem] sm:min-w-[4rem] text-center shrink-0">
+          <span className="text-xs sm:text-sm opacity-80 min-w-[3rem] sm:min-w-[4rem] text-center shrink-0">
             {chapterIndex + 1}/{sortedChapters.length}
           </span>
           {chapterIndex < sortedChapters.length - 1 ? (
@@ -326,8 +326,8 @@ export default function ReaderPage() {
       </header>
 
       {showToc && (
-        <div className="border-b border-border bg-background px-3 py-2 max-h-[45vh] overflow-y-auto overscroll-contain">
-          <p className="text-xs text-muted-foreground mb-1.5 sticky top-0 bg-background py-0.5 z-10">{t('toc', { defaultValue: 'Chapters' })}</p>
+        <div className="border-b border-current/20 bg-inherit px-3 py-2 max-h-[45vh] overflow-y-auto overscroll-contain">
+          <p className="text-xs opacity-70 mb-1.5 sticky top-0 bg-inherit py-0.5 z-10">{t('toc', { defaultValue: 'Chapters' })}</p>
           <ul className="flex flex-col gap-px text-sm">
             {sortedChapters.map((ch, idx) => (
               <li key={ch.id}>
@@ -352,10 +352,10 @@ export default function ReaderPage() {
       )}
 
       {showSettings && (
-        <div className="border-b border-border bg-background px-4 py-3">
+        <div className="border-b border-current/20 bg-inherit px-4 py-3">
           <div className="flex flex-wrap gap-4 sm:gap-6">
             <div>
-              <label className="text-xs text-muted-foreground block mb-1">{t('theme')}</label>
+              <label className="text-xs opacity-70 block mb-1">{t('theme')}</label>
               <div className="flex flex-wrap gap-1">
                 {(['default', 'sepia', 'dark', 'warm'] as Theme[]).map((th) => (
                   <Button
@@ -374,7 +374,7 @@ export default function ReaderPage() {
               </div>
             </div>
             <div>
-              <label className="text-xs text-muted-foreground block mb-1">{t('fontSize')}</label>
+              <label className="text-xs opacity-70 block mb-1">{t('fontSize')}</label>
               <div className="flex flex-wrap gap-1">
                 {(['small', 'medium', 'large'] as FontSize[]).map((fs) => (
                   <Button
@@ -442,12 +442,12 @@ export default function ReaderPage() {
             <Link
               href={`/${locale}/story/${id}/read?ch=${chapterIndex - 1}`}
               prefetch={true}
-              className="min-h-[44px] min-w-[44px] -mx-2 px-2 inline-flex items-center touch-manipulation text-primary hover:underline active:opacity-70"
+              className="min-h-[44px] min-w-[44px] -mx-2 px-2 inline-flex items-center touch-manipulation text-inherit hover:underline active:opacity-70"
             >
               ← {t('previous')}
             </Link>
           ) : (
-            <span className="min-h-[44px] min-w-[44px] -mx-2 px-2 inline-flex items-center touch-manipulation text-muted-foreground cursor-not-allowed" aria-disabled="true">
+            <span className="min-h-[44px] min-w-[44px] -mx-2 px-2 inline-flex items-center touch-manipulation text-inherit opacity-50 cursor-not-allowed" aria-disabled="true">
               ← {t('previous')}
             </span>
           )}
@@ -455,12 +455,12 @@ export default function ReaderPage() {
             <Link
               href={`/${locale}/story/${id}/read?ch=${chapterIndex + 1}`}
               prefetch={true}
-              className="min-h-[44px] min-w-[44px] -mx-2 px-2 inline-flex items-center touch-manipulation text-primary hover:underline active:opacity-70"
+              className="min-h-[44px] min-w-[44px] -mx-2 px-2 inline-flex items-center touch-manipulation text-inherit hover:underline active:opacity-70"
             >
               {t('next')} →
             </Link>
           ) : (
-            <span className="min-h-[44px] min-w-[44px] -mx-2 px-2 inline-flex items-center touch-manipulation text-muted-foreground cursor-not-allowed" aria-disabled="true">
+            <span className="min-h-[44px] min-w-[44px] -mx-2 px-2 inline-flex items-center touch-manipulation text-inherit opacity-50 cursor-not-allowed" aria-disabled="true">
               {t('next')} →
             </span>
           )}
