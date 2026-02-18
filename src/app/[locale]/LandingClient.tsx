@@ -62,8 +62,9 @@ export function LandingClient({ locale, user, profileLabel, slogan, trendingSubt
       {/* Top Nav - 移动端优化：搜索展开时两行布局，避免语言选择被遮挡 */}
       <nav className="sticky top-0 z-[100] isolate flex flex-col border-b border-slate-800/50 bg-slate-950 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-md">
         <div className="flex min-h-[52px] items-center justify-between gap-2">
-          <Link href={`/${locale}`} className="shrink-0 font-display text-lg font-bold text-amber-400">
-            STORYREALM
+          <Link href={`/${locale}`} className="flex shrink-0 items-center gap-2 font-display text-lg font-bold text-amber-400 hover:text-amber-300 transition-colors">
+            <Image src="/img/logo.jpeg" alt="StoryRealm" width={36} height={36} className="rounded-lg object-cover" />
+            <span className="hidden sm:inline">STORYREALM</span>
           </Link>
           {showSearch ? (
             <form onSubmit={handleSearchSubmit} className="flex flex-1 min-w-0 max-w-[200px] sm:max-w-[280px]">
@@ -217,6 +218,9 @@ export function LandingClient({ locale, user, profileLabel, slogan, trendingSubt
               animate={{ opacity: 1, y: 0 }}
               className="text-center"
             >
+              <div className="flex justify-center mb-4">
+                <Image src="/img/logo.jpeg" alt="StoryRealm" width={80} height={80} className="rounded-2xl object-cover shadow-xl" />
+              </div>
               <h1 className="font-display text-3xl md:text-4xl font-bold text-white mb-4">
                 STORYREALM
               </h1>

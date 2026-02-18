@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { LocaleSwitcher } from './LocaleSwitcher';
 
@@ -13,8 +14,9 @@ export function SimpleNav({ locale, title = 'StoryRealm' }: SimpleNavProps) {
   const t = useTranslations('explore');
   return (
     <nav className="sticky top-0 z-10 flex min-h-[52px] items-center justify-between border-b border-border bg-background/95 px-4 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <Link href={`/${locale}`} className="font-display text-lg font-bold text-amber-500 hover:text-amber-400 transition-colors">
-        {title}
+      <Link href={`/${locale}`} className="flex items-center gap-2 font-display text-lg font-bold text-amber-500 hover:text-amber-400 transition-colors">
+        <Image src="/img/logo.jpeg" alt={title} width={32} height={32} className="rounded-lg object-cover" />
+        <span className="hidden sm:inline">{title}</span>
       </Link>
       <div className="flex items-center gap-1 sm:gap-4">
         <LocaleSwitcher />
