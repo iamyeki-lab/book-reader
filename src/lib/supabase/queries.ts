@@ -1,5 +1,6 @@
 // AtoB: Supabase query helpers
 import { unstable_cache } from 'next/cache';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import type { Locale } from './types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { BookRow, ChapterRow, TranslationRow, GlossaryRow } from './types';
@@ -213,13 +214,21 @@ export async function getTranslation(client: SupabaseClient, chapterId: string, 
   return data as TranslationRow | null;
 }
 
+/** Anon client (env only, no cookies) for use inside unstable_cache where request context may be missing */
+function getAnonClient(): SupabaseClient {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  return createSupabaseClient(url, key, { auth: { persistSession: false } });
+}
+
 /** Data Cache: single chapter translation by bookId + chapterNumber + lang. Revalidate 1h or via revalidateTag('translations'). */
 async function getTranslationByBookAndChapter(
   bookId: string,
   chapterNumber: number,
   lang: string
 ): Promise<TranslationRow | null> {
-  const client = await createClient();
+  const client = getAnonClient();
   const chapters = await getChaptersByBookId(client, bookId);
   const ch = chapters.find((c) => c.chapter_number === chapterNumber);
   if (!ch) return null;
