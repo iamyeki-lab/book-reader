@@ -312,15 +312,15 @@ export default function ReaderPage() {
       </header>
 
       {showToc && (
-        <div className="border-b border-border bg-background px-4 py-3 max-h-[40vh] overflow-y-auto">
-          <p className="text-xs text-muted-foreground mb-2">{t('toc', { defaultValue: 'Chapters' })}</p>
-          <ul className="grid grid-cols-2 sm:grid-cols-3 gap-1 text-sm">
+        <div className="border-b border-border bg-background px-3 py-2 max-h-[45vh] overflow-y-auto overscroll-contain">
+          <p className="text-xs text-muted-foreground mb-1.5 sticky top-0 bg-background py-0.5 z-10">{t('toc', { defaultValue: 'Chapters' })}</p>
+          <ul className="flex flex-col gap-px text-sm">
             {sortedChapters.map((ch, idx) => (
               <li key={ch.id}>
                 <button
                   type="button"
                   onClick={() => goToChapter(idx)}
-                  className={`w-full text-left py-1.5 px-2 rounded truncate min-h-[44px] touch-manipulation ${
+                  className={`w-full text-left py-2 px-2.5 rounded truncate touch-manipulation ${
                     idx === chapterIndex
                       ? 'bg-primary text-primary-foreground'
                       : canReadChapter(ch)
