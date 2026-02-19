@@ -9,7 +9,7 @@ import {
   updateTranslationDataAction,
 } from '@/app/admin/actions';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Database } from 'lucide-react';
+import { RefreshCw, Database, ChevronLeft, ChevronRight } from 'lucide-react';
 
 type TabId = 'zh' | 'en' | 'es' | 'ar';
 
@@ -43,6 +43,8 @@ export function ChapterEditor({
   bookId,
   initialChapter,
   initialTranslations,
+  prevChapterId = null,
+  nextChapterId = null,
 }: {
   chapterId: string;
   bookId: string;
@@ -52,6 +54,8 @@ export function ChapterEditor({
     es: { translated_title: string; translated_content: string } | null;
     ar: { translated_title: string; translated_content: string } | null;
   };
+  prevChapterId?: string | null;
+  nextChapterId?: string | null;
 }) {
   const [activeTab, setActiveTab] = useState<TabId>('zh');
   const [chapterNumber, setChapterNumber] = useState(initialChapter.chapter_number);
@@ -253,8 +257,38 @@ export function ChapterEditor({
               </Button>
             </>
           ) : null}
+          <div className="flex items-center gap-2">
+            {prevChapterId ? (
+              <Link
+                href={`/admin/books/${bookId}/chapters/${prevChapterId}/edit`}
+                className="inline-flex items-center gap-1 rounded border px-3 py-2 text-sm hover:bg-muted"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                上一章
+              </Link>
+            ) : (
+              <span className="inline-flex cursor-not-allowed items-center gap-1 rounded border border-muted px-3 py-2 text-sm text-muted-foreground">
+                <ChevronLeft className="h-4 w-4" />
+                上一章
+              </span>
+            )}
+            {nextChapterId ? (
+              <Link
+                href={`/admin/books/${bookId}/chapters/${nextChapterId}/edit`}
+                className="inline-flex items-center gap-1 rounded border px-3 py-2 text-sm hover:bg-muted"
+              >
+                下一章
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            ) : (
+              <span className="inline-flex cursor-not-allowed items-center gap-1 rounded border border-muted px-3 py-2 text-sm text-muted-foreground">
+                下一章
+                <ChevronRight className="h-4 w-4" />
+              </span>
+            )}
+          </div>
           <Link href={`/admin/books/${bookId}/chapters`} className="rounded border px-4 py-2 text-sm">
-            返回
+            返回章节列表
           </Link>
         </div>
       </div>

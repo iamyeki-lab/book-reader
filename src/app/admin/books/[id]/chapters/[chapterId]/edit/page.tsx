@@ -1,7 +1,7 @@
 import { redirect, notFound } from 'next/navigation';
 import { getCurrentAdminEmail } from '@/lib/supabase/auth-admin';
 import { createClient } from '@/lib/supabase/server';
-import { getBookById, getChapterById, getTranslation } from '@/lib/supabase/queries';
+import { getBookById, getChapterById, getChaptersByBookId, getTranslation } from '@/lib/supabase/queries';
 import { ChapterEditor } from '../ChapterEditor';
 
 export default async function EditChapterPage({
@@ -23,6 +23,11 @@ export default async function EditChapterPage({
     notFound();
   }
   if (chapter.book_id !== id) notFound();
+
+  const chapters = await getChaptersByBookId(client, id);
+  const currentIndex = chapters.findIndex((c) => c.id === chapterId);
+  const prevChapterId = currentIndex > 0 ? chapters[currentIndex - 1].id : null;
+  const nextChapterId = currentIndex >= 0 && currentIndex < chapters.length - 1 ? chapters[currentIndex + 1].id : null;
 
   const [tEn, tEs, tAr] = await Promise.all([
     getTranslation(client, chapterId, 'en'),
@@ -48,6 +53,8 @@ export default async function EditChapterPage({
           content: chapter.content,
         }}
         initialTranslations={initialTranslations}
+        prevChapterId={prevChapterId}
+        nextChapterId={nextChapterId}
       />
       <p className="mt-4 text-sm text-muted-foreground">
         同步前会对比数据库内容，如有不同将提示是否覆盖。支持编辑原文(中文)及英/西/阿三语翻译。
