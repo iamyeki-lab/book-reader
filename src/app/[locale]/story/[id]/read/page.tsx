@@ -291,7 +291,7 @@ export default function ReaderPage() {
             <span className="hidden sm:inline">{t('toc', { defaultValue: 'Chapters' })}</span>
           </Button>
           <ShareButton
-            title={detail ? `${detail.book.title} - ${t('chapterTitle', { n: currentChapter.chapter_number })}` : ''}
+            title={detail ? `${detail.book.title} - ${currentTrans?.translated_title ?? t('chapterTitle', { n: currentChapter.chapter_number })}` : ''}
             label={t('share', { defaultValue: 'Share' })}
             copiedLabel={t('linkCopied', { defaultValue: 'Link Copied!' })}
             variant="outline"
@@ -354,7 +354,7 @@ export default function ReaderPage() {
                         : 'text-inherit opacity-60 hover:bg-current/5'
                   }`}
                 >
-                  {t('chapterTitle', { n: ch.chapter_number })}
+                  {transMap.get(ch.id)?.translated_title ?? t('chapterTitle', { n: ch.chapter_number })}
                 </button>
               </li>
             ))}
@@ -433,7 +433,7 @@ export default function ReaderPage() {
           </div>
         ) : currentTrans ? (
           <>
-            <h1 className="text-2xl font-bold mb-6">{t('chapterTitle', { n: currentChapter.chapter_number })}</h1>
+            <h1 className="text-2xl font-bold mb-6">{currentTrans?.translated_title ?? t('chapterTitle', { n: currentChapter.chapter_number })}</h1>
             <div className="whitespace-pre-wrap text-start">
               {currentTrans.translated_content.split(/\n\n+/).map((p, i) => (
                 <p key={i} className="mb-4">
