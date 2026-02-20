@@ -40,7 +40,7 @@ export default async function AdminSettingsPage() {
 
       <section className="rounded-lg border border-border p-6">
         <h2 className="mb-4 text-lg font-semibold">免费阅读章节</h2>
-        <p className="mb-4 text-sm text-muted-foreground">每本书前 N 章免费，超出需登录并购买（书豆）</p>
+        <p className="mb-4 text-sm text-muted-foreground">每本书前 N 章免费，第 N 章末尾显示订阅按钮；超出需订阅（PayPal）解锁</p>
         <form action={async (formData) => {
           'use server';
           const n = parseInt(formData.get('free_chapters') as string, 10);
@@ -63,12 +63,13 @@ export default async function AdminSettingsPage() {
       </section>
 
       <section className="rounded-lg border border-border p-6">
-        <h2 className="mb-4 text-lg font-semibold">支付设置（PayPal + 书豆）</h2>
-        <p className="mb-4 text-sm text-muted-foreground">PayPal 充值购买书豆，付费章节消耗书豆解锁</p>
+        <h2 className="mb-4 text-lg font-semibold">支付设置（订阅 + 书豆）</h2>
+        <p className="mb-4 text-sm text-muted-foreground">免费 N 章后需订阅解锁；PayPal 订阅 Plan ID 用于阅读页付费按钮。书豆仍可用于单章购买。</p>
         <form action={async (formData) => {
           'use server';
           await setPaymentConfigAction({
             paypal_client_id: (formData.get('paypal_client_id') as string) || '',
+            paypal_plan_id: (formData.get('paypal_plan_id') as string) || '',
             chapter_price_credits: parseInt(formData.get('chapter_price_credits') as string, 10) || 10,
             currency: (formData.get('currency') as string) || 'USD',
           });
@@ -79,6 +80,15 @@ export default async function AdminSettingsPage() {
               name="paypal_client_id"
               defaultValue={paymentConfig.paypal_client_id}
               placeholder="PayPal REST API Client ID"
+              className="w-full rounded border px-3 py-2"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm">PayPal 订阅 Plan ID</label>
+            <input
+              name="paypal_plan_id"
+              defaultValue={paymentConfig.paypal_plan_id}
+              placeholder="P-xxxxxxxxxx"
               className="w-full rounded border px-3 py-2"
             />
           </div>

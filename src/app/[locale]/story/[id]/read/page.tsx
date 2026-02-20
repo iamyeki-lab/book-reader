@@ -8,8 +8,8 @@
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Settings, List, Home } from 'lucide-react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { ChevronLeft, ChevronRight, Settings, List, Home, Lock } from 'lucide-react';
 import { useBookDetail } from '@/hooks/useRemoteBooks';
 import { Button } from '@/components/ui/button';
 import { ShareButton } from '@/components/ShareButton';
@@ -61,6 +61,78 @@ function LockedPurchase({
   );
 }
 
+function PayPalSubscriptionButton({ onApproved, containerId }: { onApproved: () => void; containerId: string }) {
+  const [config, setConfig] = useState<{ paypalClientId: string; paypalPlanId: string }>({ paypalClientId: '', paypalPlanId: '' });
+  const onApprovedRef = useRef(onApproved);
+  onApprovedRef.current = onApproved;
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/reader/payment-config')
+      .then((r) => r.json())
+      .then((data) => {
+        if (!cancelled && data.paypalClientId && data.paypalPlanId) setConfig(data);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (!config.paypalClientId || !config.paypalPlanId) return;
+    if (document.querySelector('script[data-paypal-reader-sub]')) {
+      const w = window as unknown as { paypal?: { Buttons: (opts: unknown) => { render: (sel: string) => void } } };
+      if (w.paypal?.Buttons && document.getElementById(containerId)) {
+        w.paypal.Buttons({
+          style: { shape: 'pill', color: 'gold', layout: 'vertical', label: 'subscribe' },
+          createSubscription: (_data: unknown, actions: { subscription: { create: (o: { plan_id: string }) => Promise<unknown> } }) =>
+            actions.subscription.create({ plan_id: config.paypalPlanId }),
+          onApprove: (data: { subscriptionID?: string }) => {
+            const sid = data.subscriptionID;
+            if (sid) {
+              fetch('/api/reader/subscription', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subscriptionID: sid }),
+              }).then(() => onApprovedRef.current());
+            }
+          },
+        }).render(`#${containerId}`);
+      }
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = `https://www.paypal.com/sdk/js?client-id=${config.paypalClientId}&vault=true&intent=subscription`;
+    script.setAttribute('data-sdk-integration-source', 'button-factory');
+    script.setAttribute('data-paypal-reader-sub', '1');
+    script.async = true;
+    script.onload = () => {
+      const w = window as unknown as { paypal?: { Buttons: (opts: unknown) => { render: (sel: string) => void } } };
+      if (w.paypal?.Buttons && document.getElementById(containerId)) {
+        w.paypal.Buttons({
+          style: { shape: 'pill', color: 'gold', layout: 'vertical', label: 'subscribe' },
+          createSubscription: (_data: unknown, actions: { subscription: { create: (o: { plan_id: string }) => Promise<unknown> } }) =>
+            actions.subscription.create({ plan_id: config.paypalPlanId }),
+          onApprove: (data: { subscriptionID?: string }) => {
+            const sid = data.subscriptionID;
+            if (sid) {
+              fetch('/api/reader/subscription', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subscriptionID: sid }),
+              }).then(() => onApprovedRef.current());
+            }
+          },
+        }).render(`#${containerId}`);
+      }
+    };
+    document.body.appendChild(script);
+    return () => { script.remove(); };
+  }, [config.paypalClientId, config.paypalPlanId, containerId]);
+
+  if (!config.paypalClientId || !config.paypalPlanId) return <p className="text-muted-foreground text-sm">未配置 PayPal 订阅</p>;
+  return <div id={containerId} className="min-h-[40px] inline-block" />;
+}
+
 const STORAGE_SETTINGS = 'reader-settings-book';
 
 type Theme = 'default' | 'sepia' | 'dark' | 'warm';
@@ -82,6 +154,7 @@ export default function ReaderPage() {
   const [showToc, setShowToc] = useState(false);
   const [freeChapters, setFreeChapters] = useState(999);
   const [purchasedIds, setPurchasedIds] = useState<Set<string>>(new Set());
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
   const saveProgress = useCallback(
@@ -132,6 +205,7 @@ export default function ReaderPage() {
       if (cancelled) return;
       setFreeChapters(ctx.freeChapters ?? 999);
       setPurchasedIds(new Set(ctx.purchasedChapterIds ?? []));
+      setHasActiveSubscription(!!ctx.hasActiveSubscription);
       if (ctx.userId) setUserId(ctx.userId);
       const serverCi = prog.chapterIndex;
       const serverSt = prog.scrollTop;
@@ -223,8 +297,18 @@ export default function ReaderPage() {
   const currentChapter = sortedChapters[chapterIndex];
   const currentTrans = currentChapter ? transMap.get(currentChapter.id) : null;
   const canReadChapter = (ch: { id: string; chapter_number: number }) =>
-    ch.chapter_number <= freeChapters || purchasedIds.has(ch.id);
+    ch.chapter_number <= freeChapters || purchasedIds.has(ch.id) || hasActiveSubscription;
   const currentLocked = currentChapter && !canReadChapter(currentChapter);
+  const isLastFreeChapter = currentChapter?.chapter_number === freeChapters && !hasActiveSubscription;
+  const nextChapterLocked = chapterIndex < sortedChapters.length - 1 && !hasActiveSubscription && (currentChapter && currentChapter.chapter_number >= freeChapters);
+  const refetchContext = useCallback(() => {
+    fetch(`/api/reader/context?bookId=${id}`)
+      .then((r) => r.json())
+      .then((ctx) => {
+        setHasActiveSubscription(!!ctx.hasActiveSubscription);
+      })
+      .catch(() => {});
+  }, [id]);
 
   const goToChapter = (idx: number) => {
     setScrollTop(0);
@@ -323,11 +407,17 @@ export default function ReaderPage() {
             {chapterIndex + 1}/{sortedChapters.length}
           </span>
           {chapterIndex < sortedChapters.length - 1 ? (
-            <Button variant="outline" size="sm" asChild className="h-9 min-h-[44px] min-w-[44px] p-0 shrink-0 text-inherit border-current/50 bg-transparent hover:bg-current/10">
-              <Link href={`/${locale}/story/${id}/read?ch=${chapterIndex + 1}`} prefetch={true}>
+            nextChapterLocked ? (
+              <Button variant="outline" size="sm" disabled className="h-9 min-h-[44px] min-w-[44px] p-0 shrink-0 text-inherit border-current/50 bg-transparent opacity-60" title={t('subscribeToContinue', { defaultValue: '订阅以解锁下一章' })}>
                 <ChevronRight className="h-3.5 w-3" />
-              </Link>
-            </Button>
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" asChild className="h-9 min-h-[44px] min-w-[44px] p-0 shrink-0 text-inherit border-current/50 bg-transparent hover:bg-current/10">
+                <Link href={`/${locale}/story/${id}/read?ch=${chapterIndex + 1}`} prefetch={true}>
+                  <ChevronRight className="h-3.5 w-3" />
+                </Link>
+              </Button>
+            )
           ) : (
             <Button variant="outline" size="sm" disabled className="h-9 min-h-[44px] min-w-[44px] p-0 shrink-0 text-inherit border-current/50 bg-transparent opacity-60">
               <ChevronRight className="h-3.5 w-3" />
@@ -346,7 +436,7 @@ export default function ReaderPage() {
                   type="button"
                   onClick={() => goToChapter(idx)}
                   onMouseEnter={() => router.prefetch(`/${locale}/story/${id}/read?ch=${idx}`)}
-                  className={`w-full text-left py-2 px-2.5 rounded truncate touch-manipulation ${
+                  className={`w-full text-left py-2 px-2.5 rounded truncate touch-manipulation flex items-center gap-2 ${
                     idx === chapterIndex
                       ? 'bg-primary text-primary-foreground'
                       : canReadChapter(ch)
@@ -354,7 +444,8 @@ export default function ReaderPage() {
                         : 'text-inherit opacity-60 hover:bg-current/5'
                   }`}
                 >
-                  {transMap.get(ch.id)?.translated_title ?? t('chapterTitle', { n: ch.chapter_number })}
+                  {!canReadChapter(ch) && <Lock className="h-3.5 w-3.5 shrink-0 opacity-70" />}
+                  <span className="truncate">{transMap.get(ch.id)?.translated_title ?? t('chapterTitle', { n: ch.chapter_number })}</span>
                 </button>
               </li>
             ))}
@@ -415,20 +506,16 @@ export default function ReaderPage() {
       >
         {currentLocked ? (
           <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">{t('locked', { defaultValue: 'This chapter requires purchase' })}</p>
+            <p className="text-muted-foreground mb-4">{t('locked', { defaultValue: '订阅以继续阅读' })}</p>
             {!userId ? (
               <Button asChild>
-                <Link href={`/${locale}/auth`}>{t('loginToRead', { defaultValue: 'Login to read' })}</Link>
+                <Link href={`/${locale}/auth`}>{t('loginToRead', { defaultValue: '登录后订阅' })}</Link>
               </Button>
             ) : (
-              <LockedPurchase
-                bookId={id}
-                chapterId={currentChapter.id}
-                onUnlock={() => {
-                  setPurchasedIds((prev) => new Set([...Array.from(prev), currentChapter.id]));
-                }}
-                t={(k) => t(k as 'purchaseChapter', { defaultValue: k })}
-              />
+              <div className="flex flex-col items-center gap-4">
+                <p className="text-sm text-muted-foreground">订阅后即可阅读全部章节</p>
+                <PayPalSubscriptionButton containerId="paypal-sub-locked" onApproved={refetchContext} />
+              </div>
             )}
           </div>
         ) : currentTrans ? (
@@ -441,6 +528,12 @@ export default function ReaderPage() {
                 </p>
               ))}
             </div>
+            {isLastFreeChapter && userId && (
+              <div className="mt-10 pt-8 border-t border-current/20 text-center">
+                <p className="text-muted-foreground mb-4">订阅以继续阅读后续章节</p>
+                <PayPalSubscriptionButton containerId="paypal-sub-end" onApproved={refetchContext} />
+              </div>
+            )}
           </>
         ) : (
           <p className="text-muted-foreground">No translation for this chapter.</p>
@@ -463,13 +556,19 @@ export default function ReaderPage() {
             </span>
           )}
           {chapterIndex < sortedChapters.length - 1 ? (
-            <Link
-              href={`/${locale}/story/${id}/read?ch=${chapterIndex + 1}`}
-              prefetch={true}
-              className="min-h-[44px] min-w-[44px] -mx-2 px-2 inline-flex items-center touch-manipulation text-inherit hover:underline active:opacity-70"
-            >
-              {t('next')} →
-            </Link>
+            nextChapterLocked ? (
+              <span className="min-h-[44px] min-w-[44px] -mx-2 px-2 inline-flex items-center touch-manipulation text-inherit opacity-50 cursor-not-allowed" aria-disabled="true" title={t('subscribeToContinue', { defaultValue: '订阅以解锁下一章' })}>
+                {t('next')} →
+              </span>
+            ) : (
+              <Link
+                href={`/${locale}/story/${id}/read?ch=${chapterIndex + 1}`}
+                prefetch={true}
+                className="min-h-[44px] min-w-[44px] -mx-2 px-2 inline-flex items-center touch-manipulation text-inherit hover:underline active:opacity-70"
+              >
+                {t('next')} →
+              </Link>
+            )
           ) : (
             <span className="min-h-[44px] min-w-[44px] -mx-2 px-2 inline-flex items-center touch-manipulation text-inherit opacity-50 cursor-not-allowed" aria-disabled="true">
               {t('next')} →

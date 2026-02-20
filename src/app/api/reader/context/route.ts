@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { getFreeChaptersCount, getChapterPurchasesByUserAndBook } from '@/lib/supabase/queries';
+import { getFreeChaptersCount, getChapterPurchasesByUserAndBook, getHasActiveSubscription } from '@/lib/supabase/queries';
 import { apiError, logApiError } from '@/lib/api-error';
 
 export async function GET(request: NextRequest) {
@@ -16,14 +16,20 @@ export async function GET(request: NextRequest) {
 
     const { data: { user } } = await client.auth.getUser();
     let purchasedChapterIds: string[] = [];
+    let hasActiveSubscription = false;
     if (user) {
-      const purchased = await getChapterPurchasesByUserAndBook(client, user.id, bookId);
+      const [purchased, sub] = await Promise.all([
+        getChapterPurchasesByUserAndBook(client, user.id, bookId),
+        getHasActiveSubscription(client, user.id),
+      ]);
       purchasedChapterIds = Array.from(purchased);
+      hasActiveSubscription = sub;
     }
 
     return NextResponse.json({
       freeChapters,
       purchasedChapterIds,
+      hasActiveSubscription,
       userId: user?.id ?? null,
     });
   } catch (e) {

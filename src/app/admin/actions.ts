@@ -350,7 +350,7 @@ export async function setFreeChaptersCountAction(count: number) {
   return { ok: true };
 }
 
-export async function setPaymentConfigAction(config: { paypal_client_id?: string; chapter_price_credits?: number; currency?: string }) {
+export async function setPaymentConfigAction(config: { paypal_client_id?: string; paypal_plan_id?: string; chapter_price_credits?: number; currency?: string }) {
   await ensureAdmin();
   const client = createAdminClient();
   await setPaymentConfig(client, config);

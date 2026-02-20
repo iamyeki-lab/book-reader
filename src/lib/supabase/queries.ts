@@ -376,6 +376,7 @@ export async function getFreeChaptersCount(client: SupabaseClient, bookId?: stri
 
 export async function getPaymentConfig(client: SupabaseClient): Promise<{
   paypal_client_id: string;
+  paypal_plan_id: string;
   chapter_price_credits: number;
   currency: string;
 }> {
@@ -383,6 +384,7 @@ export async function getPaymentConfig(client: SupabaseClient): Promise<{
   const obj = (data?.value as Record<string, unknown>) || {};
   return {
     paypal_client_id: (obj.paypal_client_id as string) || '',
+    paypal_plan_id: (obj.paypal_plan_id as string) || '',
     chapter_price_credits: Math.max(0, (obj.chapter_price_credits as number) || 10),
     currency: (obj.currency as string) || 'USD',
   };
@@ -395,13 +397,36 @@ export async function setFreeChaptersCount(client: SupabaseClient, count: number
   if (error) throw error;
 }
 
-export async function setPaymentConfig(client: SupabaseClient, config: { paypal_client_id?: string; chapter_price_credits?: number; currency?: string }) {
+export async function setPaymentConfig(client: SupabaseClient, config: { paypal_client_id?: string; paypal_plan_id?: string; chapter_price_credits?: number; currency?: string }) {
   const existing = await getPaymentConfig(client);
   const merged = { ...existing, ...config };
   const { error } = await client
     .from('site_settings')
     .upsert({ key: 'payment_config', value: merged as unknown as Record<string, unknown> }, { onConflict: 'key' });
   if (error) throw error;
+}
+
+export async function getHasActiveSubscription(client: SupabaseClient, userId: string | null): Promise<boolean> {
+  if (!userId) return false;
+  const { data } = await client.from('reader_profiles').select('paypal_subscription_id').eq('user_id', userId).single();
+  const sid = (data as { paypal_subscription_id?: string | null } | null)?.paypal_subscription_id;
+  return typeof sid === 'string' && sid.length > 0;
+}
+
+export async function setPayPalSubscriptionId(client: SupabaseClient, userId: string, subscriptionId: string): Promise<void> {
+  const { data: existing } = await client.from('reader_profiles').select('user_id').eq('user_id', userId).maybeSingle();
+  if (existing) {
+    const { error } = await client
+      .from('reader_profiles')
+      .update({ paypal_subscription_id: subscriptionId })
+      .eq('user_id', userId);
+    if (error) throw error;
+  } else {
+    const { error } = await client
+      .from('reader_profiles')
+      .insert({ user_id: userId, credits: 0, paypal_subscription_id: subscriptionId });
+    if (error) throw error;
+  }
 }
 
 export async function getReaderCredits(client: SupabaseClient, userId: string): Promise<number> {
