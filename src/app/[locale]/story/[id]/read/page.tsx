@@ -17,50 +17,6 @@ import type { Locale } from '@/lib/supabase/types';
 
 const STORAGE_PROGRESS = 'reader-progress-';
 
-function LockedPurchase({
-  bookId,
-  chapterId,
-  onUnlock,
-  t,
-}: {
-  bookId: string;
-  chapterId: string;
-  onUnlock: () => void;
-  t: (k: string) => string;
-}) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const handlePurchase = async () => {
-    setError(null);
-    setLoading(true);
-    try {
-      const res = await fetch('/api/reader/purchase', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bookId, chapterId }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        onUnlock();
-      } else {
-        setError(data.error || 'Purchase failed');
-      }
-    } catch {
-      setError('Network error');
-    } finally {
-      setLoading(false);
-    }
-  };
-  return (
-    <div>
-      <Button onClick={handlePurchase} disabled={loading} className="min-h-[44px] min-w-[120px]">
-        {loading ? '...' : t('purchaseChapter')}
-      </Button>
-      {error && <p className="text-destructive text-sm mt-2">{error}</p>}
-    </div>
-  );
-}
-
 function PayPalSubscriptionButton({ onApproved, containerId }: { onApproved: () => void; containerId: string }) {
   const [config, setConfig] = useState<{ paypalClientId: string; paypalPlanId: string }>({ paypalClientId: '', paypalPlanId: '' });
   const onApprovedRef = useRef(onApproved);
@@ -273,6 +229,15 @@ export default function ReaderPage() {
     );
   };
 
+  const refetchContext = useCallback(() => {
+    fetch(`/api/reader/context?bookId=${id}`)
+      .then((r) => r.json())
+      .then((ctx) => {
+        setHasActiveSubscription(!!ctx.hasActiveSubscription);
+      })
+      .catch(() => {});
+  }, [id]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background p-8 flex items-center justify-center">
@@ -301,14 +266,6 @@ export default function ReaderPage() {
   const currentLocked = currentChapter && !canReadChapter(currentChapter);
   const isLastFreeChapter = currentChapter?.chapter_number === freeChapters && !hasActiveSubscription;
   const nextChapterLocked = chapterIndex < sortedChapters.length - 1 && !hasActiveSubscription && (currentChapter && currentChapter.chapter_number >= freeChapters);
-  const refetchContext = useCallback(() => {
-    fetch(`/api/reader/context?bookId=${id}`)
-      .then((r) => r.json())
-      .then((ctx) => {
-        setHasActiveSubscription(!!ctx.hasActiveSubscription);
-      })
-      .catch(() => {});
-  }, [id]);
 
   const goToChapter = (idx: number) => {
     setScrollTop(0);
