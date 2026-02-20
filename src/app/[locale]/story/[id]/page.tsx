@@ -1,21 +1,15 @@
 import type { Metadata } from 'next';
 import { getCachedBookMetadata } from '@/lib/supabase/queries';
 import type { Locale } from '@/lib/supabase/types';
+import { getSeo, toAbsoluteUrl, SITE_NAME } from '@/lib/seo';
 import { StoryDetailClient } from './StoryDetailClient';
 
-const SITE_NAME = 'StoryRealm';
 const OG_LOCALE: Record<string, string> = {
   en: 'en_US',
   es: 'es_ES',
   ar: 'ar_SA',
   zh: 'zh_CN',
 };
-
-function toAbsoluteUrl(pathOrUrl: string): string {
-  if (pathOrUrl.startsWith('http://') || pathOrUrl.startsWith('https://')) return pathOrUrl;
-  const base = process.env.NEXT_PUBLIC_APP_URL || 'https://storyrealm.app';
-  return base.replace(/\/$/, '') + (pathOrUrl.startsWith('/') ? pathOrUrl : '/' + pathOrUrl);
-}
 
 export async function generateMetadata({
   params,
@@ -28,20 +22,24 @@ export async function generateMetadata({
   try {
     const data = await getCachedBookMetadata(id, lang);
     if (!data) {
+      const seo = getSeo(lang);
       meta = {
-        title: `Read on ${SITE_NAME}`,
-        description: 'Web novels in your language.',
-        openGraph: { title: SITE_NAME, siteName: SITE_NAME },
-        twitter: { card: 'summary_large_image', title: SITE_NAME },
+        title: seo.tagline,
+        description: seo.description,
+        keywords: seo.keywords,
+        openGraph: { title: seo.title, description: seo.description, siteName: SITE_NAME },
+        twitter: { card: 'summary_large_image', title: seo.title, description: seo.description },
       };
     } else {
       const { title, description, coverUrl } = data;
       const summary = description.slice(0, 160);
       const canonicalUrl = toAbsoluteUrl(`/${locale}/story/${id}`);
       const imageUrl = coverUrl ? toAbsoluteUrl(coverUrl) : undefined;
+      const seo = getSeo(lang);
       meta = {
-        title: `${title} - Read on ${SITE_NAME}`,
+        title: `${title} - ${seo.tagline}`,
         description: summary,
+        keywords: [...seo.keywords, title],
         openGraph: {
           title,
           description: summary,
@@ -68,11 +66,13 @@ export async function generateMetadata({
       };
     }
   } catch {
+    const seo = getSeo((locale || 'en') as Locale);
     meta = {
-      title: `Read on ${SITE_NAME}`,
-      description: 'Web novels in your language.',
-      openGraph: { title: SITE_NAME, siteName: SITE_NAME },
-      twitter: { card: 'summary_large_image', title: SITE_NAME },
+      title: seo.tagline,
+      description: seo.description,
+      keywords: seo.keywords,
+      openGraph: { title: seo.title, description: seo.description, siteName: SITE_NAME },
+      twitter: { card: 'summary_large_image', title: seo.title, description: seo.description },
     };
   }
   return meta;

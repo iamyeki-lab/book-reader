@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
 import { getLandingSlogan, getTrendingSubtitle, getBooks, getBookTitleForLang, getBookCoverForLang, getBookDescriptionForLang } from '@/lib/supabase/queries';
+import { JsonLdWebSite } from '@/components/JsonLdWebSite';
 import { LandingClient } from './LandingClient';
 import type { Locale } from '@/lib/supabase/types';
 
@@ -34,7 +35,9 @@ export default async function LandingPage({
   const trendingBooks = allBooks.slice(0, 12);
 
   return (
-    <LandingClient
+    <>
+      <JsonLdWebSite locale={locale} />
+      <LandingClient
       locale={locale}
       user={user}
       profileLabel={t('profile', { defaultValue: '个人中心' })}
@@ -57,5 +60,6 @@ export default async function LandingPage({
         linkCopied: t('linkCopied', { defaultValue: 'Link Copied!' }),
       }}
     />
+    </>
   );
 }

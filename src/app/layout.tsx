@@ -7,12 +7,37 @@ const cinzel = Cinzel({ subsets: ['latin'], variable: '--font-cinzel' });
 const amiri = Amiri({ weight: ['400', '700'], subsets: ['arabic'], variable: '--font-amiri' });
 
 export const metadata: Metadata = {
-  title: 'StoryRealm - Read Web Novels',
-  description: 'Read web novels in your language',
+  title: {
+    default: 'StoryRealm - Read Web Novels in English, Spanish & Arabic',
+    template: '%s | StoryRealm',
+  },
+  description:
+    'Read translated web novels and light novels in your language. Free online reading in English, Spanish, and Arabic. Fantasy, romance, cultivation.',
+  keywords: [
+    'web novels',
+    'light novels',
+    'translated novels',
+    'read online',
+    'StoryRealm',
+    'novelas web',
+    'روايات ويب',
+  ],
   icons: {
     icon: '/img/logo.jpeg',
     apple: '/img/logo.jpeg',
   },
+  openGraph: {
+    type: 'website',
+    siteName: 'StoryRealm',
+    title: 'StoryRealm - Read Web Novels',
+    description: 'Read web novels in your language. English, Spanish, Arabic.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'StoryRealm - Read Web Novels',
+    description: 'Read web novels in your language.',
+  },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://storyrealm.app'),
 };
 
 export const viewport: Viewport = {
