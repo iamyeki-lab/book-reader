@@ -15,10 +15,14 @@ import {
   setFreeChaptersCountAction,
   setPaymentConfigAction,
 } from '@/app/admin/actions';
+import { SettingsToast } from '@/components/SettingsToast';
 
-export default async function AdminSettingsPage() {
+export default async function AdminSettingsPage(props: { searchParams: Promise<{ toast?: string }> }) {
   const email = await getCurrentAdminEmail();
   if (!email) redirect('/admin/login');
+
+  const searchParams = await props.searchParams;
+  const toast = searchParams?.toast;
 
   const client = await createClient();
   const [locales, sloganEn, sloganEs, sloganAr, trendingEn, trendingEs, trendingAr, freeChapters, paymentConfig] =
@@ -37,6 +41,7 @@ export default async function AdminSettingsPage() {
   return (
     <div className="max-w-2xl space-y-12">
       <h1 className="mb-6 text-2xl font-bold">站点设置</h1>
+      <SettingsToast toast={toast} />
 
       <section className="rounded-lg border border-border p-6">
         <h2 className="mb-4 text-lg font-semibold">免费阅读章节</h2>
@@ -45,6 +50,7 @@ export default async function AdminSettingsPage() {
           'use server';
           const n = parseInt(formData.get('free_chapters') as string, 10);
           if (!isNaN(n)) await setFreeChaptersCountAction(n);
+          redirect('/admin/settings?toast=free_chapters');
         }} className="flex items-end gap-4">
           <div>
             <label className="mb-1 block text-sm">免费章节数</label>
@@ -63,16 +69,15 @@ export default async function AdminSettingsPage() {
       </section>
 
       <section className="rounded-lg border border-border p-6">
-        <h2 className="mb-4 text-lg font-semibold">支付设置（订阅 + 书豆）</h2>
-        <p className="mb-4 text-sm text-muted-foreground">免费 N 章后需订阅解锁；PayPal 订阅 Plan ID 用于阅读页付费按钮。书豆仍可用于单章购买。</p>
+        <h2 className="mb-4 text-lg font-semibold">订阅设置</h2>
+        <p className="mb-4 text-sm text-muted-foreground">免费 N 章后需订阅解锁；PayPal Client ID 与订阅 Plan ID 用于阅读页订阅按钮。</p>
         <form action={async (formData) => {
           'use server';
           await setPaymentConfigAction({
             paypal_client_id: (formData.get('paypal_client_id') as string) || '',
             paypal_plan_id: (formData.get('paypal_plan_id') as string) || '',
-            chapter_price_credits: parseInt(formData.get('chapter_price_credits') as string, 10) || 10,
-            currency: (formData.get('currency') as string) || 'USD',
           });
+          redirect('/admin/settings?toast=subscription');
         }} className="space-y-4">
           <div>
             <label className="mb-1 block text-sm">PayPal Client ID</label>
@@ -92,24 +97,13 @@ export default async function AdminSettingsPage() {
               className="w-full rounded border px-3 py-2"
             />
           </div>
-          <div>
-            <label className="mb-1 block text-sm">每章价格（书豆）</label>
-            <input
-              type="number"
-              name="chapter_price_credits"
-              defaultValue={paymentConfig.chapter_price_credits}
-              min={1}
-              className="w-24 rounded border px-3 py-2"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm">货币</label>
-            <input name="currency" defaultValue={paymentConfig.currency} className="w-24 rounded border px-3 py-2" />
-          </div>
           <button type="submit" className="rounded bg-primary px-4 py-2 text-primary-foreground">
             保存
           </button>
         </form>
+        <div className="mt-6 rounded border border-amber-500/40 bg-amber-500/5 p-4 text-sm text-amber-700 dark:text-amber-300">
+          <strong>书豆功能暂时关闭。</strong> 单章书豆购买暂未开放，当前仅支持订阅解锁全书。
+        </div>
       </section>
 
       <section className="mb-8">
@@ -124,6 +118,7 @@ export default async function AdminSettingsPage() {
           if (es) list.push('es');
           if (ar) list.push('ar');
           await setEnabledLocalesAction(list);
+          redirect('/admin/settings?toast=locales');
         }} className="space-y-2">
           <label className="flex items-center gap-2">
             <input type="checkbox" name="locale_en" defaultChecked={locales.includes('en')} />
@@ -152,6 +147,7 @@ export default async function AdminSettingsPage() {
             es: (formData.get('slogan_es') as string) || '',
             ar: (formData.get('slogan_ar') as string) || '',
           });
+          redirect('/admin/settings?toast=slogan');
         }} className="space-y-4">
           <div>
             <label className="mb-1 block text-sm">EN</label>
@@ -180,6 +176,7 @@ export default async function AdminSettingsPage() {
             es: (formData.get('trending_es') as string) || '',
             ar: (formData.get('trending_ar') as string) || '',
           });
+          redirect('/admin/settings?toast=trending');
         }} className="space-y-4">
           <div>
             <label className="mb-1 block text-sm">EN</label>
