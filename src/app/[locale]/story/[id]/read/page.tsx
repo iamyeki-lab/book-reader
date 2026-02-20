@@ -17,10 +17,23 @@ import type { Locale } from '@/lib/supabase/types';
 
 const STORAGE_PROGRESS = 'reader-progress-';
 
-function PayPalSubscriptionButton({ onApproved, containerId }: { onApproved: () => void; containerId: string }) {
+const PAYPAL_LOCALE: Record<string, string> = { en: 'en_US', es: 'es_ES', ar: 'ar_EG' };
+
+function PayPalSubscriptionButton({
+  onApproved,
+  containerId,
+  locale,
+  notConfiguredText,
+}: {
+  onApproved: () => void;
+  containerId: string;
+  locale: string;
+  notConfiguredText: string;
+}) {
   const [config, setConfig] = useState<{ paypalClientId: string; paypalPlanId: string }>({ paypalClientId: '', paypalPlanId: '' });
   const onApprovedRef = useRef(onApproved);
   onApprovedRef.current = onApproved;
+  const paypalLocale = PAYPAL_LOCALE[locale] || 'en_US';
 
   useEffect(() => {
     let cancelled = false;
@@ -57,7 +70,7 @@ function PayPalSubscriptionButton({ onApproved, containerId }: { onApproved: () 
       return;
     }
     const script = document.createElement('script');
-    script.src = `https://www.paypal.com/sdk/js?client-id=${config.paypalClientId}&vault=true&intent=subscription`;
+    script.src = `https://www.paypal.com/sdk/js?client-id=${config.paypalClientId}&vault=true&intent=subscription&locale=${paypalLocale}`;
     script.setAttribute('data-sdk-integration-source', 'button-factory');
     script.setAttribute('data-paypal-reader-sub', '1');
     script.async = true;
@@ -83,9 +96,9 @@ function PayPalSubscriptionButton({ onApproved, containerId }: { onApproved: () 
     };
     document.body.appendChild(script);
     return () => { script.remove(); };
-  }, [config.paypalClientId, config.paypalPlanId, containerId]);
+  }, [config.paypalClientId, config.paypalPlanId, containerId, paypalLocale]);
 
-  if (!config.paypalClientId || !config.paypalPlanId) return <p className="text-muted-foreground text-sm">未配置 PayPal 订阅</p>;
+  if (!config.paypalClientId || !config.paypalPlanId) return <p className="text-muted-foreground text-sm">{notConfiguredText}</p>;
   return <div id={containerId} className="min-h-[40px] inline-block" />;
 }
 
@@ -365,7 +378,7 @@ export default function ReaderPage() {
           </span>
           {chapterIndex < sortedChapters.length - 1 ? (
             nextChapterLocked ? (
-              <Button variant="outline" size="sm" disabled className="h-9 min-h-[44px] min-w-[44px] p-0 shrink-0 text-inherit border-current/50 bg-transparent opacity-60" title={t('subscribeToContinue', { defaultValue: '订阅以解锁下一章' })}>
+              <Button variant="outline" size="sm" disabled className="h-9 min-h-[44px] min-w-[44px] p-0 shrink-0 text-inherit border-current/50 bg-transparent opacity-60" title={t('subscribeToContinue')}>
                 <ChevronRight className="h-3.5 w-3" />
               </Button>
             ) : (
@@ -463,15 +476,15 @@ export default function ReaderPage() {
       >
         {currentLocked ? (
           <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">{t('locked', { defaultValue: '订阅以继续阅读' })}</p>
+            <p className="text-muted-foreground mb-4">{t('locked')}</p>
             {!userId ? (
               <Button asChild>
-                <Link href={`/${locale}/auth`}>{t('loginToRead', { defaultValue: '登录后订阅' })}</Link>
+                <Link href={`/${locale}/auth`}>{t('loginToRead')}</Link>
               </Button>
             ) : (
               <div className="flex flex-col items-center gap-4">
-                <p className="text-sm text-muted-foreground">订阅后即可阅读全部章节</p>
-                <PayPalSubscriptionButton containerId="paypal-sub-locked" onApproved={refetchContext} />
+                <p className="text-sm text-muted-foreground">{t('subscribePrompt')}</p>
+                <PayPalSubscriptionButton containerId="paypal-sub-locked" onApproved={refetchContext} locale={locale} notConfiguredText={t('paypalNotConfigured')} />
               </div>
             )}
           </div>
@@ -487,8 +500,8 @@ export default function ReaderPage() {
             </div>
             {isLastFreeChapter && userId && (
               <div className="mt-10 pt-8 border-t border-current/20 text-center">
-                <p className="text-muted-foreground mb-4">订阅以继续阅读后续章节</p>
-                <PayPalSubscriptionButton containerId="paypal-sub-end" onApproved={refetchContext} />
+                <p className="text-muted-foreground mb-4">{t('subscribePromptEnd')}</p>
+                <PayPalSubscriptionButton containerId="paypal-sub-end" onApproved={refetchContext} locale={locale} notConfiguredText={t('paypalNotConfigured')} />
               </div>
             )}
           </>
@@ -514,7 +527,7 @@ export default function ReaderPage() {
           )}
           {chapterIndex < sortedChapters.length - 1 ? (
             nextChapterLocked ? (
-              <span className="min-h-[44px] min-w-[44px] -mx-2 px-2 inline-flex items-center touch-manipulation text-inherit opacity-50 cursor-not-allowed" aria-disabled="true" title={t('subscribeToContinue', { defaultValue: '订阅以解锁下一章' })}>
+              <span className="min-h-[44px] min-w-[44px] -mx-2 px-2 inline-flex items-center touch-manipulation text-inherit opacity-50 cursor-not-allowed" aria-disabled="true" title={t('subscribeToContinue')}>
                 {t('next')} →
               </span>
             ) : (
