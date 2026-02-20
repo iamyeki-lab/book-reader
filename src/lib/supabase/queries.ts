@@ -213,6 +213,49 @@ export async function getTranslation(client: SupabaseClient, chapterId: string, 
   return data as TranslationRow | null;
 }
 
+/** 按书籍汇总各章节的翻译情况，用于后台「已翻译章节」展示 */
+export type ChapterTranslationStatus = {
+  chapter_id: string;
+  chapter_number: number;
+  title: string;
+  en: boolean;
+  es: boolean;
+  ar: boolean;
+};
+
+export async function getTranslationStatusByBookId(
+  client: SupabaseClient,
+  bookId: string
+): Promise<ChapterTranslationStatus[]> {
+  const chapters = await getChaptersByBookId(client, bookId);
+  if (chapters.length === 0) return [];
+
+  const chapterIds = chapters.map((c) => c.id);
+  const { data: rows, error } = await client
+    .from('translations')
+    .select('chapter_id, target_lang')
+    .in('chapter_id', chapterIds);
+  if (error) throw error;
+
+  const byChapter = new Map<string, Set<string>>();
+  for (const c of chapters) {
+    byChapter.set(c.id, new Set());
+  }
+  for (const r of rows || []) {
+    const set = byChapter.get(r.chapter_id);
+    if (set) set.add(r.target_lang);
+  }
+
+  return chapters.map((c) => ({
+    chapter_id: c.id,
+    chapter_number: c.chapter_number,
+    title: c.title,
+    en: byChapter.get(c.id)?.has('en') ?? false,
+    es: byChapter.get(c.id)?.has('es') ?? false,
+    ar: byChapter.get(c.id)?.has('ar') ?? false,
+  }));
+}
+
 /** Anon client (env only, no cookies) for use inside unstable_cache where request context may be missing */
 function getAnonClient(): SupabaseClient {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
