@@ -3,7 +3,7 @@ import { unstable_cache } from 'next/cache';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import type { Locale } from './types';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { BookRow, ChapterRow, TranslationRow, GlossaryRow } from './types';
+import type { BookRow, ChapterRow, TranslationRow, GlossaryRow, GlossaryPendingRow } from './types';
 
 // --- Books ---
 export async function getBooks(
@@ -599,6 +599,53 @@ export async function deleteGlossary(client: SupabaseClient, bookId: string) {
   if (itemsErr) throw itemsErr;
   const { error } = await client.from('glossaries').delete().eq('book_id', bookId);
   if (error) throw error;
+}
+
+// --- Glossary Pending (表二) ---
+export async function getGlossaryPendingByBookId(client: SupabaseClient, bookId: string): Promise<GlossaryPendingRow | null> {
+  const { data, error } = await client.from('glossary_pending').select('*').eq('book_id', bookId).single();
+  if (error && error.code !== 'PGRST116') throw error;
+  return data as GlossaryPendingRow | null;
+}
+
+/** 将 incoming 合并进该书表二（增量），用于翻译端写入新术语 */
+export async function upsertGlossaryPending(client: SupabaseClient, bookId: string, content: Record<string, unknown>) {
+  const existing = await getGlossaryPendingByBookId(client, bookId);
+  const existingContent = (existing?.content as Record<string, unknown>) || null;
+  const merged = mergeGlossaryContent(existingContent, content);
+  const { data, error } = await client
+    .from('glossary_pending')
+    .upsert({ book_id: bookId, content: merged }, { onConflict: 'book_id' })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+/** 完全覆盖该书表二（后台编辑后保存） */
+export async function replaceGlossaryPending(client: SupabaseClient, bookId: string, content: Record<string, unknown>) {
+  const { data, error } = await client
+    .from('glossary_pending')
+    .upsert({ book_id: bookId, content }, { onConflict: 'book_id' })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+/** 将表二合并到表一（glossaries），并清空表二 */
+export async function mergePendingIntoGlossary(client: SupabaseClient, bookId: string) {
+  const pending = await getGlossaryPendingByBookId(client, bookId);
+  const pendingContent = (pending?.content as Record<string, unknown>) || null;
+  if (!pendingContent || (typeof pendingContent === 'object' && Object.keys(pendingContent).length === 0)) {
+    return { merged: 0 };
+  }
+  const main = await getGlossaryByBookId(client, bookId);
+  const mainContent = (main?.content as Record<string, unknown>) || null;
+  const merged = mergeGlossaryContent(mainContent, pendingContent);
+  await client.from('glossaries').upsert({ book_id: bookId, content: merged }, { onConflict: 'book_id' });
+  await client.from('glossary_pending').delete().eq('book_id', bookId);
+  return { merged: 1 };
 }
 
 // --- Admin ---

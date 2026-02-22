@@ -77,6 +77,15 @@ export interface GlossaryRow {
   updated_at: string;
 }
 
+/** 表二：新术语暂存，结构同 glossaries.content */
+export interface GlossaryPendingRow {
+  id: string;
+  book_id: string;
+  content: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface BookRow {
   id: string;
   title: string;

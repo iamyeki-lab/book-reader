@@ -23,6 +23,9 @@ import {
   replaceGlossary,
   deleteGlossary,
   getGlossaryByBookId,
+  getGlossaryPendingByBookId,
+  replaceGlossaryPending,
+  mergePendingIntoGlossary,
 } from '@/lib/supabase/queries';
 
 async function ensureAdmin() {
@@ -357,6 +360,42 @@ export async function deleteGlossaryAction(bookId: string) {
   revalidatePath('/admin/glossary');
   revalidatePath(`/admin/glossary/${bookId}`);
   return { ok: true };
+}
+
+// --- 表二 (glossary_pending) ---
+export async function getGlossaryPendingContentAction(bookId: string) {
+  await ensureAdmin();
+  const client = createAdminClient();
+  const row = await getGlossaryPendingByBookId(client, bookId);
+  if (!row?.content || (typeof row.content === 'object' && Object.keys(row.content as object).length === 0)) {
+    return { content: null };
+  }
+  return { content: JSON.stringify(row.content, null, 2) };
+}
+
+export async function saveGlossaryPendingAction(bookId: string, contentJson: string) {
+  await ensureAdmin();
+  const client = createAdminClient();
+  let content: Record<string, unknown>;
+  try {
+    content = JSON.parse(contentJson) as Record<string, unknown>;
+  } catch {
+    return { error: 'Invalid JSON' };
+  }
+  await replaceGlossaryPending(client, bookId, content);
+  revalidatePath('/admin/glossary');
+  revalidatePath(`/admin/glossary/${bookId}`);
+  return { ok: true };
+}
+
+/** 将表二合并到表一，并清空表二 */
+export async function mergePendingIntoGlossaryAction(bookId: string) {
+  await ensureAdmin();
+  const client = createAdminClient();
+  const { merged } = await mergePendingIntoGlossary(client, bookId);
+  revalidatePath('/admin/glossary');
+  revalidatePath(`/admin/glossary/${bookId}`);
+  return { ok: true, merged };
 }
 
 export async function setFreeChaptersCountAction(count: number) {
