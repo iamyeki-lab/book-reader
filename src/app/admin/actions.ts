@@ -20,6 +20,7 @@ import {
   getTranslation,
   upsertTranslation,
   upsertGlossary,
+  replaceGlossary,
   deleteGlossary,
   getGlossaryByBookId,
 } from '@/lib/supabase/queries';
@@ -318,6 +319,22 @@ export async function saveGlossaryAction(bookId: string, contentJson: string) {
     return { error: 'Invalid JSON' };
   }
   await upsertGlossary(client, bookId, content);
+  revalidatePath('/admin/glossary');
+  revalidatePath(`/admin/glossary/${bookId}`);
+  return { ok: true };
+}
+
+/** 完全覆盖同步：用当前内容覆盖服务端术语表，并删除该书所有 glossary_items，使服务端与当前一致、无多余项 */
+export async function saveGlossaryOverwriteAction(bookId: string, contentJson: string) {
+  await ensureAdmin();
+  const client = createAdminClient();
+  let content: Record<string, unknown>;
+  try {
+    content = JSON.parse(contentJson) as Record<string, unknown>;
+  } catch {
+    return { error: 'Invalid JSON' };
+  }
+  await replaceGlossary(client, bookId, content);
   revalidatePath('/admin/glossary');
   revalidatePath(`/admin/glossary/${bookId}`);
   return { ok: true };

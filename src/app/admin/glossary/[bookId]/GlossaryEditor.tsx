@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { saveGlossaryAction, getGlossaryContentAction } from '@/app/admin/actions';
+import { saveGlossaryAction, saveGlossaryOverwriteAction, getGlossaryContentAction } from '@/app/admin/actions';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Database } from 'lucide-react';
+import { RefreshCw, Database, Replace } from 'lucide-react';
 
 function countGlossaryByLang(content: Record<string, unknown>): { en: number; es: number; ar: number } {
   const counts = { en: 0, es: 0, ar: 0 };
@@ -45,15 +45,20 @@ export function GlossaryEditor({
     }
   }, [content]);
 
-  async function handleSave() {
+  async function handleSave(overwrite: boolean) {
     setMessage(null);
     setLoading(true);
     try {
-      const result = await saveGlossaryAction(bookId, content);
+      const result = overwrite
+        ? await saveGlossaryOverwriteAction(bookId, content)
+        : await saveGlossaryAction(bookId, content);
       if (result.error) {
         setMessage({ type: 'err', text: result.error });
       } else {
-        setMessage({ type: 'ok', text: '已同步到数据库' });
+        setMessage({
+          type: 'ok',
+          text: overwrite ? '已完全覆盖同步（服务端多余术语已删除）' : '已合并同步到数据库',
+        });
       }
     } catch (e) {
       setMessage({ type: 'err', text: String(e) });
@@ -89,14 +94,18 @@ export function GlossaryEditor({
           <span className="rounded bg-amber-100 px-2 py-0.5 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300">ES {stats.es} 条</span>
           <span className="rounded bg-emerald-100 px-2 py-0.5 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300">AR {stats.ar} 条</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing}>
             <RefreshCw className={`h-4 w-4 mr-1 ${refreshing ? 'animate-spin' : ''}`} />
             从数据库刷新
           </Button>
-          <Button onClick={handleSave} disabled={loading}>
+          <Button variant="outline" onClick={() => handleSave(false)} disabled={loading}>
             <Database className="h-4 w-4 mr-1" />
-            {loading ? '同步中…' : '同步到数据库'}
+            {loading ? '同步中…' : '合并同步'}
+          </Button>
+          <Button onClick={() => handleSave(true)} disabled={loading} title="用当前内容完全覆盖服务端，并删除服务端多余术语">
+            <Replace className="h-4 w-4 mr-1" />
+            {loading ? '同步中…' : '完全覆盖同步'}
           </Button>
         </div>
       </div>

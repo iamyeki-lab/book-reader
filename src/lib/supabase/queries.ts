@@ -213,6 +213,23 @@ export async function getTranslation(client: SupabaseClient, chapterId: string, 
   return data as TranslationRow | null;
 }
 
+/** 按章节 ID 列表批量拉取某语种翻译，用于书籍详情一次请求拿齐所有章，避免 N 次单章查询 */
+export async function getTranslationsByChapterIds(
+  client: SupabaseClient,
+  chapterIds: string[],
+  targetLang: string
+): Promise<TranslationRow[]> {
+  if (chapterIds.length === 0) return [];
+  const { data, error } = await client
+    .from('translations')
+    .select('*')
+    .in('chapter_id', chapterIds)
+    .eq('target_lang', targetLang)
+    .order('chapter_id');
+  if (error) throw error;
+  return (data || []) as TranslationRow[];
+}
+
 /** 按书籍汇总各章节的翻译情况，用于后台「已翻译章节」展示 */
 export type ChapterTranslationStatus = {
   chapter_id: string;
@@ -561,7 +578,25 @@ export async function upsertGlossary(client: SupabaseClient, bookId: string, con
   return data;
 }
 
+/**
+ * 完全覆盖该书术语表：用新 content 覆盖 glossaries，并删除该书全部 glossary_items，
+ * 使服务端与当前内容严格一致，无多余项。
+ */
+export async function replaceGlossary(client: SupabaseClient, bookId: string, content: Record<string, unknown>) {
+  const { error: delErr } = await client.from('glossary_items').delete().eq('book_id', bookId);
+  if (delErr) throw delErr;
+  const { data, error } = await client
+    .from('glossaries')
+    .upsert({ book_id: bookId, content }, { onConflict: 'book_id' })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 export async function deleteGlossary(client: SupabaseClient, bookId: string) {
+  const { error: itemsErr } = await client.from('glossary_items').delete().eq('book_id', bookId);
+  if (itemsErr) throw itemsErr;
   const { error } = await client.from('glossaries').delete().eq('book_id', bookId);
   if (error) throw error;
 }

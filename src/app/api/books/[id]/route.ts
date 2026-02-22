@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
-// Translations: getCachedTranslation uses unstable_cache (queries.ts) for deduplication and 1h revalidation; revalidateTag('translations') from admin clears cache.
+// 书籍详情：书+章节+翻译一次批量拉取（getTranslationsByChapterIds），避免按章 N 次查询。
 import { createClient } from '@/lib/supabase/server';
 import {
   getBookByIdOrNull,
   getChaptersByBookId,
-  getCachedTranslation,
+  getTranslationsByChapterIds,
   getTranslationsByBookIdAndLangUpdatedSince,
   getBookTitleForLang,
   getBookCoverForLang,
@@ -41,26 +41,14 @@ export async function GET(
         translated_content: t.translated_content,
       }));
     } else {
-      const translationResults = await Promise.all(
-        chapters.map((c) => getCachedTranslation(id, c.chapter_number, lang))
-      );
-      translations = translationResults
-        .map((t, i) =>
-          t
-            ? {
-                chapter_id: chapters[i].id,
-                target_lang: t.target_lang,
-                translated_title: t.translated_title,
-                translated_content: t.translated_content,
-              }
-            : null
-        )
-        .filter(Boolean) as Array<{
-        chapter_id: string;
-        target_lang: string;
-        translated_title: string;
-        translated_content: string;
-      }>;
+      const chapterIds = chapters.map((c) => c.id);
+      const raw = await getTranslationsByChapterIds(client, chapterIds, lang);
+      translations = raw.map((t) => ({
+        chapter_id: t.chapter_id,
+        target_lang: t.target_lang,
+        translated_title: t.translated_title,
+        translated_content: t.translated_content,
+      }));
     }
 
     const body = {
